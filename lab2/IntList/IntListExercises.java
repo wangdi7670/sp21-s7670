@@ -10,7 +10,11 @@ public class IntListExercises {
      */
     public static void addConstant(IntList lst, int c) {
         IntList head = lst;
+        // 这有bug，直接注掉
+        /*
         while (head.rest != null) {
+        */
+        while (head != null) {
             head.first += c;
             head = head.rest;
         }
@@ -26,9 +30,16 @@ public class IntListExercises {
     public static void setToZeroIfMaxFEL(IntList L) {
         IntList p = L;
         while (p != null) {
+            int currentMax = max(p);
+            boolean firstEqualsLast = firstDigitEqualsLastDigit(currentMax);
+            if (firstEqualsLast) {
+                p.first = 0;
+            }
+            /*
             if (firstDigitEqualsLastDigit(max(p))) {
                 p.first = 0;
             }
+            */
             p = p.rest;
         }
     }
@@ -51,7 +62,11 @@ public class IntListExercises {
      */
     public static boolean firstDigitEqualsLastDigit(int x) {
         int lastDigit = x % 10;
+        /** 这块有bug，直接注释掉，重写一行 */
+        /*
         while (x > 10) {
+        */
+        while (x >= 10) {
             x = x / 10;
         }
         int firstDigit = x % 10;
@@ -77,6 +92,11 @@ public class IntListExercises {
             lst.first *= lst.first;
         }
 
+        // 这有bug
+        /*
         return currElemIsPrime || squarePrimes(lst.rest);
+        */
+        boolean temp = squarePrimes(lst.rest);
+        return currElemIsPrime || temp;
     }
 }

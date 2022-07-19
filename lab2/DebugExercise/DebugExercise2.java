@@ -46,7 +46,10 @@ public class DebugExercise2 {
         }
         int[] returnArray = new int[a.length];
         for (int i = 0; i < a.length; i += 1) {
-            int biggerValue = max(a[i], b[i]);
+            // 这错了，max应该返回最大值，但返回的是最小值
+            // int biggerValue = max(a[i], b[i]);
+
+            int biggerValue = Math.max(a[i], b[i]);
             returnArray[i] = biggerValue;
         }
 
@@ -58,7 +61,11 @@ public class DebugExercise2 {
         int i = 0;
         int sum = 0;
         while (i < x.length) {
-            sum = sum + add(sum, x[i]);
+            // 这加法算错了
+            // sum = sum + add(sum, x[i]);
+
+            // 正确答案
+            sum = add(sum, x[i]);
             i = i + 1;
         }
         return sum;

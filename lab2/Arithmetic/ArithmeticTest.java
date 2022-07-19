@@ -29,4 +29,13 @@ public class ArithmeticTest {
         assertEquals(-6, Arithmetic.sum(0, -6));
         assertEquals(0, Arithmetic.sum(6, -6));
     }
+
+
+    // @Test
+    public void name() {
+
+        float f = (float) 7 / 4;
+        System.out.println(f);
+        System.out.println(Math.round(f));
+    }
 }
