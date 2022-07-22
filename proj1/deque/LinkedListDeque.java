@@ -213,7 +213,7 @@ public class LinkedListDeque <T> implements Deque<T>, Iterable<T>{
         return recursive(index, first);
     }
 
-    public T recursive(int index, Node node) {
+    private T recursive(int index, Node node) {
         if (index == 0) {
             return node.obj;
         }
