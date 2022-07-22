@@ -2,6 +2,10 @@ package randomizedtest;
 
 import edu.princeton.cs.algs4.StdRandom;
 import org.junit.Test;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import static org.junit.Assert.*;
 
 /**
@@ -33,6 +37,11 @@ public class TestBuggyAList {
         r1 = alist.removeLast();
         r2 = buggyAList.removeLast();
         assertEquals(true, r1 == r2);
+    }
+
+    @Test
+    public void name() {
+        Deque<Integer> deque = new ArrayDeque<>();
     }
 
     @Test
