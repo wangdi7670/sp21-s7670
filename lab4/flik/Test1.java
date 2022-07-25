@@ -9,6 +9,7 @@ import org.junit.Test;
 public class Test1 {
     @Test
     public void test1() {
-
+        boolean b = Flik.isSameNumber(127, 127);
+        System.out.println(b);
     }
 }
