@@ -1,10 +1,12 @@
 package gitlet;
 
+import java.io.Serializable;
+
 /**
  * @author: Wingd
  * @date: 2022/7/27 17:41
  */
-public class Blob {
+public class Blob implements Serializable {
     private String id;
 
     private String fileName;

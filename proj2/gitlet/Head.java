@@ -1,19 +1,21 @@
 package gitlet;
 
+import java.io.Serializable;
+
 /**
  * @author: Wingd
  * @date: 2022/7/27 17:36
  *
  * The Head points to the active branch
  */
-public class Head {
-    private Branch activeBranch;
+public class Head implements Serializable {
+    private String commitId;
 
-    public Branch getActiveBranch() {
-        return activeBranch;
+    public String getCommitId() {
+        return commitId;
     }
 
-    public void setActiveBranch(Branch activeBranch) {
-        this.activeBranch = activeBranch;
+    public void setCommitId(String commitId) {
+        this.commitId = commitId;
     }
 }

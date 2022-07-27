@@ -10,6 +10,8 @@ import static gitlet.Utils.*;
  *  does at a high level.
  *
  *  @author TODO
+ *
+ *
  */
 public class Repository {
     /**
@@ -22,8 +24,43 @@ public class Repository {
 
     /** The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
-    /** The .gitlet directory. */
+
+    /** The .gitlet directory.
+     *
+     *  .gitlet
+     *      |--objects
+     *          |--commits
+     *          |--blobs
+     *
+     *      |--ref
+     *          |--head
+     *          |--branches
+     *
+     *      |--staging area
+     *
+     */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
 
-    /* TODO: fill in the rest of this class. */
+    public static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
+
+    public static final File COMMITS_DIR = join(OBJECTS_DIR, "commits");
+
+    public static final File BLOBS_DIR = join(OBJECTS_DIR, "blobs");
+
+    public static final File REF_DIR = join(GITLET_DIR, "ref");
+
+    public static final File HEAD_DIR = join(REF_DIR, "head");
+
+    public static final File BRANCHES = join(REF_DIR, "branches");
+
+    public static final File STAGING_AREA = join(GITLET_DIR, "branches");
+
+    /**
+     * gitlet是否初始化
+     * @return
+     */
+    public static boolean isInitialized() {
+        return GITLET_DIR.exists();
+    }
+
 }

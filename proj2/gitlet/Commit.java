@@ -3,6 +3,7 @@ package gitlet;
 // TODO: any imports you need here
 
 import javax.swing.*;
+import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +14,7 @@ import java.util.Map;
  *  简化版本的 gitlet 不考虑子目录
  *  @author TODO
  */
-public class Commit {
+public class Commit implements Serializable {
     /**
      * TODO: add instance variables here.
      *
@@ -40,6 +41,9 @@ public class Commit {
         this("null", "00:00:00 UTC, Thursday, 1 January 1970", "initial commit");
     }
 
+    public Commit(String parent, String message) {
+        this(parent, new Date().toString(), message);
+    }
 
     public Commit(String parent, String date, String message) {
         this.parent = parent;
