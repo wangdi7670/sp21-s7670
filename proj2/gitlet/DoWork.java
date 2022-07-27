@@ -1,7 +1,7 @@
 package gitlet;
 
 import java.io.File;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author: Wingd
@@ -18,6 +18,10 @@ public class DoWork {
             System.exit(0);
         }
 
+        doInit();
+    }
+
+    private void doInit() {
         // 创建初始的文件夹
         Repository.initDir();
 
@@ -35,7 +39,7 @@ public class DoWork {
     }
 
     /**
-     *
+     *  add:
      * @param fileName
      */
     public void add(String fileName) {
@@ -54,7 +58,7 @@ public class DoWork {
     }
 
 
-    public void doAdd(File file) {
+    private void doAdd(File file) {
         String fileName = file.getName();
 
         // 直接加入staged area, 如果之前有的话会覆盖掉之前的
@@ -63,6 +67,7 @@ public class DoWork {
         blob.save();
         Staged staged = Staged.readFromFile();
         staged.getStagedForAdd().put(fileName, blob.getBlobId());
+        staged.save();
 
         // 加入的blob要是和当前commit中的版本一致，则从staged area中删除
         Head head = Head.readFromFile();
@@ -71,8 +76,83 @@ public class DoWork {
         if (fileName2blobId.containsKey(fileName)) {
             if (fileName2blobId.get(fileName).equals(blob.getBlobId())) {
                 staged.getStagedForAdd().remove(fileName);
+                staged.save();
             }
         }
+    }
 
+    /**
+     * status:
+     */
+    public void status() {
+        showBranches();
+        showStagedFilesForAdd();
+        showStagedFilesForRemoval();
+    }
+
+    private void showBranches() {
+        System.out.println("=== Branches ===");
+
+        Head head = Head.readFromFile();
+        String currentBranch = head.getBranchName();
+        System.out.println("*" + currentBranch);
+
+        String[] branchNames = Branch.listAllBranchNames();
+        Arrays.sort(branchNames);
+        for (String name : branchNames) {
+            if (name.equals(currentBranch)) {
+                continue;
+            }
+            System.out.println(name);
+        }
+
+        System.out.println();
+    }
+
+    private void showStagedFilesForAdd() {
+        System.out.println("=== Staged Files ===");
+        Staged staged = Staged.readFromFile();
+
+        List<String> strings = staged.listAllStagedFileNamesForAdd();
+        Collections.sort(strings);
+        for (String s : strings) {
+            System.out.println(s);
+        }
+
+        System.out.println();
+    }
+
+    private void showStagedFilesForRemoval() {
+        System.out.println("=== Removal Files ===");
+        Staged staged = Staged.readFromFile();
+
+        List<String> strings = staged.listAllStagedFileNamesForRemoval();
+        Collections.sort(strings);
+        for (String s : strings) {
+            System.out.println(s);
+        }
+        System.out.println();
+    }
+
+
+    private void showModificationsNotStagedForCommit() {
+        System.out.println("=== Modifications Not Staged For Commit ===");
+
+        System.out.println();
+    }
+
+
+    private void showUntrackedFiles() {
+        System.out.println("=== Untracked Files ===");
+
+        System.out.println();
+    }
+
+
+    public static void main(String[] args) {
+        // 按字典序排序
+        String[] strings = {"rea", "fads", "ad", "1dfa", "ac"};
+        Arrays.sort(strings);
+        System.out.println(Arrays.toString(strings));
     }
 }

@@ -2,8 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author: Wingd
@@ -54,6 +53,26 @@ public class Staged implements Serializable, Dumpable {
         File f = Utils.join(FOLDER, FILE_NAME);
         Staged staged = Utils.readObject(f, Staged.class);
         return staged;
+    }
+
+    public List<String> listAllStagedFileNamesForAdd() {
+        Set<String> strings = stagedForAdd.keySet();
+        List<String> list = new ArrayList<>();
+
+        for (String s : strings) {
+            list.add(s);
+        }
+        return list;
+    }
+
+    public List<String> listAllStagedFileNamesForRemoval() {
+        Set<String> strings = stagedForRemoval.keySet();
+        List<String> list = new ArrayList<>();
+
+        for (String s : strings) {
+            list.add(s);
+        }
+        return list;
     }
 
     @Override

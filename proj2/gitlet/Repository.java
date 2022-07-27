@@ -63,6 +63,10 @@ public class Repository {
         delete(GITLET_DIR.getPath());
     }
 
+    /**
+     * 删除指定路径的所有文件
+     * @param path
+     */
     public static void delete(String path) {
         File f = new File(path);
         if (f.isDirectory()) {

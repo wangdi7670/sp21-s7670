@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.Serializable;
 import java.nio.channels.SelectionKey;
+import java.util.List;
 
 /**
  * @author: Wingd
@@ -20,6 +21,15 @@ public class Branch implements Serializable, Dumpable {
     public Branch(String commitId, String branchName) {
         this.commitId = commitId;
         this.branchName = branchName;
+    }
+
+    /**
+     * 返回所有 branch 的名字
+     * @return
+     */
+    public static String[] listAllBranchNames() {
+        String[] branchNames = FOLDER.list();
+        return branchNames;
     }
 
     /**

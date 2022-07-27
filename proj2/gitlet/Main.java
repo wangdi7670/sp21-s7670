@@ -42,7 +42,8 @@ public class Main {
 
                 break;
             case "status":
-
+                validArgsNumber("status", 1, args);
+                doWork.status();
                 break;
         }
     }
