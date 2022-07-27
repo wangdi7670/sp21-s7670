@@ -15,6 +15,7 @@ public class Head implements Serializable, Dumpable {
     private String commitId;
 
     public static final File FOLDER = Repository.HEAD_DIR;
+    public static final String FILE_NAME = "HEAD";
 
     public Head(String branchName, String commitId) {
         this.branchName = branchName;
@@ -25,8 +26,14 @@ public class Head implements Serializable, Dumpable {
      * 持久化, 文件名是 'HEAD'
      */
     public void save() {
-        File file = Utils.join(FOLDER, "HEAD");
+        File file = Utils.join(FOLDER, FILE_NAME);
         Utils.writeObject(file, this);
+    }
+
+    public static Head readFromFile() {
+        File file = Utils.join(FOLDER, FILE_NAME);
+        Head head = Utils.readObject(file, Head.class);
+        return head;
     }
 
     public String getBranchName() {

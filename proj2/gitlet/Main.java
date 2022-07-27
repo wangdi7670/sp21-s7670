@@ -21,8 +21,29 @@ public class Main {
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
+                validArgsNumber("add", 2, args);
+                doWork.add(args[1]);
                 break;
             // TODO: FILL THE REST IN
+            case "commit":
+
+                break;
+            case "rm":
+
+                break;
+            case "log":
+
+                break;
+
+            case "global-log":
+
+                break;
+            case "find":
+
+                break;
+            case "status":
+
+                break;
         }
     }
 

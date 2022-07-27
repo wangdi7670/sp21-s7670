@@ -65,12 +65,26 @@ public class Commit implements Serializable, Dumpable {
         Utils.writeObject(file, this);
     }
 
+    public static Commit readFromFile(String commitId) {
+        File file = Utils.join(FOLDER, commitId);
+        Commit commit = Utils.readObject(file, Commit.class);
+        return commit;
+    }
+
     private void setId() {
         id = Utils.sha1(parent, date, message);
     }
 
     public String getId() {
         return id;
+    }
+
+    public Map<String, String> getFileName2blobId() {
+        return fileName2blobId;
+    }
+
+    public void setFileName2blobId(Map<String, String> fileName2blobId) {
+        this.fileName2blobId = fileName2blobId;
     }
 
     @Override

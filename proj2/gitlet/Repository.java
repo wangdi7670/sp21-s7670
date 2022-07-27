@@ -53,7 +53,7 @@ public class Repository {
 
     public static final File BRANCHES = join(REF_DIR, "branches");
 
-    public static final File STAGING_AREA = join(GITLET_DIR, "branches");
+    public static final File STAGING_AREA = join(GITLET_DIR, "staged");
 
     public static void main(String[] args) {
         destroy();

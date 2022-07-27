@@ -1,13 +1,14 @@
 package gitlet;
 
+import java.io.File;
 import java.io.Serializable;
 
 /**
  * @author: Wingd
  * @date: 2022/7/27 17:41
  */
-public class Blob implements Serializable {
-    private String id;
+public class Blob implements Serializable, Dumpable {
+    private String blobId;
 
     private String fileName;
 
@@ -23,6 +24,24 @@ public class Blob implements Serializable {
         if (fileName == null || content == null) {
             return;
         }
-        id = Utils.sha1(fileName, content);
+        blobId = Utils.sha1(fileName, content);
+    }
+
+    public String getBlobId() {
+        return blobId;
+    }
+
+    /**
+     * 持久化，文件名就是自己的 blobId
+     */
+    public void save() {
+        File f = Utils.join(Repository.BLOBS_DIR, blobId);
+        Utils.writeObject(f, this);
+    }
+
+    @Override
+    public void dump() {
+        System.out.println("file: " + fileName);
+        System.out.println(new String(content));
     }
 }
