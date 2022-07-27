@@ -1,5 +1,6 @@
 package gitlet;
 
+import java.io.File;
 import java.io.Serializable;
 
 /**
@@ -10,6 +11,18 @@ import java.io.Serializable;
  */
 public class Head implements Serializable {
     private String commitId;
+
+    public static final File FOLDER = Repository.HEAD_DIR;
+
+    public Head(String commitId) {
+        this.commitId = commitId;
+    }
+
+    public void save() {
+        File file = Utils.join(FOLDER, "HEAD");
+        Utils.writeObject(file, this);
+    }
+
 
     public String getCommitId() {
         return commitId;

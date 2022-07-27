@@ -1,5 +1,6 @@
 package gitlet;
 
+import java.io.File;
 import java.io.Serializable;
 import java.nio.channels.SelectionKey;
 
@@ -10,9 +11,24 @@ import java.nio.channels.SelectionKey;
  * A branch is a pointer to a commit
  */
 public class Branch implements Serializable {
+    public static final File FOLDER = Repository.BRANCHES;
+
     private String commitId;
 
     private String branchName;
+
+    public Branch(String commitId, String branchName) {
+        this.commitId = commitId;
+        this.branchName = branchName;
+    }
+
+    /**
+     * 持久化，文件名是分支名
+     */
+    public void save() {
+        File file = Utils.join(FOLDER, branchName);
+        Utils.writeObject(file, this);
+    }
 
     public String getBranchName() {
         return branchName;

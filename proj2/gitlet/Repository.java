@@ -63,4 +63,21 @@ public class Repository {
         return GITLET_DIR.exists();
     }
 
+    public static void initDir() {
+        mkdir(GITLET_DIR);
+        mkdir(OBJECTS_DIR);
+        mkdir(COMMITS_DIR);
+        mkdir(BLOBS_DIR);
+        mkdir(REF_DIR);
+        mkdir(HEAD_DIR);
+        mkdir(BRANCHES);
+        mkdir(STAGING_AREA);
+    }
+
+    public static void mkdir(File file) {
+        if (file.exists()) {
+            throw new GitletException("文件已经存在");
+        }
+        file.mkdir();
+    }
 }

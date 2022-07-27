@@ -3,6 +3,7 @@ package gitlet;
 // TODO: any imports you need here
 
 import javax.swing.*;
+import java.io.File;
 import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.HashMap;
@@ -15,6 +16,9 @@ import java.util.Map;
  *  @author TODO
  */
 public class Commit implements Serializable {
+
+    public static final File FOLDER = Repository.COMMITS_DIR;
+
     /**
      * TODO: add instance variables here.
      *
@@ -53,7 +57,19 @@ public class Commit implements Serializable {
         setId();
     }
 
+    /**
+     * 文件名是 id
+     */
+    public void save() {
+        File file = Utils.join(FOLDER, id);
+        Utils.writeObject(file, this);
+    }
+
     private void setId() {
         id = Utils.sha1(parent, date, message);
+    }
+
+    public String getId() {
+        return id;
     }
 }
