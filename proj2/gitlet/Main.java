@@ -14,11 +14,19 @@ public class Main {
         switch(firstArg) {
             case "init":
                 // TODO: handle the `init` command
+                validArgsNumber("init", 1, args);
+
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
                 break;
             // TODO: FILL THE REST IN
+        }
+    }
+
+    static void validArgsNumber(String command, int expect, String[] args) {
+        if (args.length != expect) {
+            throw new RuntimeException(String.format("incorrect number of args for: %s", command));
         }
     }
 }

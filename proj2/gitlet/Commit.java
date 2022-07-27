@@ -2,12 +2,15 @@ package gitlet;
 
 // TODO: any imports you need here
 
+import javax.swing.*;
 import java.util.Date; // TODO: You'll likely use this in this class
+import java.util.HashMap;
+import java.util.Map;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
- *
+ *  简化版本的 gitlet 不考虑子目录
  *  @author TODO
  */
 public class Commit {
@@ -19,8 +22,34 @@ public class Commit {
      * variable is used. We've provided one example for `message`.
      */
 
+    /** sha-1算法生成id */
+    private String id;
+
     /** The message of this Commit. */
     private String message;
 
-    /* TODO: fill in the rest of this class. */
+    /** 用id表示父节点 */
+    private String parent;
+
+    /** 创建时候的日期 */
+    private String date;
+
+    private Map<String, String> fileName2blobId;
+
+    public Commit() {
+        this("null", "00:00:00 UTC, Thursday, 1 January 1970", "initial commit");
+    }
+
+
+    public Commit(String parent, String date, String message) {
+        this.parent = parent;
+        this.date = date;
+        this.message = message;
+        fileName2blobId = new HashMap<>();
+        setId();
+    }
+
+    private void setId() {
+        id = Utils.sha1(parent, date, message);
+    }
 }
