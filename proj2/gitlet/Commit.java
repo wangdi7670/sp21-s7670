@@ -15,7 +15,7 @@ import java.util.Map;
  *  简化版本的 gitlet 不考虑子目录
  *  @author TODO
  */
-public class Commit implements Serializable {
+public class Commit implements Serializable, Dumpable {
 
     public static final File FOLDER = Repository.COMMITS_DIR;
 
@@ -71,5 +71,12 @@ public class Commit implements Serializable {
 
     public String getId() {
         return id;
+    }
+
+    @Override
+    public void dump() {
+        System.out.println("msg: " + message + "\n"
+        + "date: " + date + "\n"
+        + "parent: " + parent + "\n");
     }
 }
