@@ -55,8 +55,11 @@ public class Repository {
 
     public static final File STAGING_AREA = join(GITLET_DIR, "branches");
 
+    public static void main(String[] args) {
+        destroy();
+    }
+
     public static void destroy() {
-        String cwd = System.getProperty("user.dir");
         delete(GITLET_DIR.getPath());
     }
 

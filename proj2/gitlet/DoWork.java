@@ -16,7 +16,7 @@ public class DoWork {
 
         Commit initCommit = new Commit();
         Branch branch = new Branch(initCommit.getId(), "master");
-        Head head = new Head(initCommit.getId());
+        Head head = new Head(branch.getBranchName(), initCommit.getId());
 
         initCommit.save();
         branch.save();

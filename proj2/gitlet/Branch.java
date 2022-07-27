@@ -10,7 +10,7 @@ import java.nio.channels.SelectionKey;
  *
  * A branch is a pointer to a commit
  */
-public class Branch implements Serializable {
+public class Branch implements Serializable, Dumpable {
     public static final File FOLDER = Repository.BRANCHES;
 
     private String commitId;
@@ -44,5 +44,14 @@ public class Branch implements Serializable {
 
     public void setCommitId(String commitId) {
         this.commitId = commitId;
+    }
+
+    @Override
+    public void dump() {
+        System.out.println("branchName: " + branchName);
+        System.out.println("===");
+        File f = Utils.join(Repository.COMMITS_DIR, commitId);
+        Commit commit = Utils.readObject(f, Commit.class);
+        commit.dump();
     }
 }
