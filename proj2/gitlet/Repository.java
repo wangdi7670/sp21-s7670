@@ -55,6 +55,23 @@ public class Repository {
 
     public static final File STAGING_AREA = join(GITLET_DIR, "branches");
 
+    public static void destroy() {
+        String cwd = System.getProperty("user.dir");
+        delete(GITLET_DIR.getPath());
+    }
+
+    public static void delete(String path) {
+        File f = new File(path);
+        if (f.isDirectory()) {
+            String[] list = f.list();
+            for (String s : list) {
+                delete(path + "\\" + s);
+            }
+        }
+
+        f.delete();
+    }
+
     /**
      * gitlet是否初始化
      * @return
