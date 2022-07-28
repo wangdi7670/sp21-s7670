@@ -14,6 +14,9 @@ public class Main {
         DoWork doWork = new DoWork();
 
         switch(firstArg) {
+            case "destroy":
+                Repository.destroy();
+                break;
             case "init":
                 // TODO: handle the `init` command
                 validArgsNumber("init", 1, args);
@@ -26,10 +29,17 @@ public class Main {
                 break;
             // TODO: FILL THE REST IN
             case "commit":
-
+                try {
+                    validArgsNumber("commit", 2, args);
+                } catch (Exception e) {
+                    System.out.println("Please enter a commit message.");
+                    System.exit(0);
+                }
+                doWork.commit(args[1]);
                 break;
             case "rm":
-
+                validArgsNumber("rm", 2, args);
+                doWork.rm(args[1]);
                 break;
             case "log":
 

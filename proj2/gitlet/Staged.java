@@ -13,7 +13,8 @@ public class Staged implements Serializable, Dumpable {
     private Map<String, String> stagedForAdd;
 
     /** key 是文件名， value是blobId */
-    private Map<String, String> stagedForRemoval;
+    // private Map<String, String> stagedForRemoval;
+    private Set<String> stagedForRemoval;
 
     private static final String FILE_NAME = "staging";
 
@@ -22,24 +23,18 @@ public class Staged implements Serializable, Dumpable {
 
     public Staged() {
         stagedForAdd = new HashMap<>();
-        stagedForRemoval = new HashMap<>();
+        stagedForRemoval = new HashSet<>();
     }
 
     public Map<String, String> getStagedForAdd() {
         return stagedForAdd;
     }
 
-    public void setStagedForAdd(Map<String, String> stagedForAdd) {
-        this.stagedForAdd = stagedForAdd;
-    }
 
-    public Map<String, String> getStagedForRemoval() {
+    public Set<String> getStagedForRemoval() {
         return stagedForRemoval;
     }
 
-    public void setStagedForRemoval(Map<String, String> stagedForRemoval) {
-        this.stagedForRemoval = stagedForRemoval;
-    }
 
     /**
      * 持久化
@@ -66,10 +61,9 @@ public class Staged implements Serializable, Dumpable {
     }
 
     public List<String> listAllStagedFileNamesForRemoval() {
-        Set<String> strings = stagedForRemoval.keySet();
         List<String> list = new ArrayList<>();
 
-        for (String s : strings) {
+        for (String s : stagedForRemoval) {
             list.add(s);
         }
         return list;

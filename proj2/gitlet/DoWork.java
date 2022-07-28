@@ -1,5 +1,6 @@
 package gitlet;
 
+import java.beans.FeatureDescriptor;
 import java.io.File;
 import java.util.*;
 
@@ -8,6 +9,13 @@ import java.util.*;
  * @date: 2022/7/27 19:20
  */
 public class DoWork {
+
+    private void checkInitialize() {
+        if (!Repository.isInitialized()) {
+            System.out.println("还未初始化呢~~");
+            System.exit(0);
+        }
+    }
 
     /**
      * init command:
@@ -43,10 +51,7 @@ public class DoWork {
      * @param fileName
      */
     public void add(String fileName) {
-        if (!Repository.isInitialized()) {
-            System.out.println("还未初始化呢~~");
-            System.exit(0);
-        }
+        checkInitialize();
 
         File file = Utils.join(Repository.CWD, fileName);
         if (!file.exists()) {
@@ -67,7 +72,6 @@ public class DoWork {
         blob.save();
         Staged staged = Staged.readFromFile();
         staged.getStagedForAdd().put(fileName, blob.getBlobId());
-        staged.save();
 
         // 加入的blob要是和当前commit中的版本一致，则从staged area中删除
         Head head = Head.readFromFile();
@@ -76,10 +80,82 @@ public class DoWork {
         if (fileName2blobId.containsKey(fileName)) {
             if (fileName2blobId.get(fileName).equals(blob.getBlobId())) {
                 staged.getStagedForAdd().remove(fileName);
-                staged.save();
             }
         }
+
+        staged.save();
     }
+
+
+    /**
+     * commit 命令: When we commit, only the HEAD and active branch move
+     * @param msg
+     */
+    public void commit(String msg) {
+        checkInitialize();
+
+        Staged staged = Staged.readFromFile();
+        if (staged.getStagedForRemoval().isEmpty() && staged.getStagedForAdd().isEmpty()) {
+            System.out.println("No changes added to the commit.");
+            System.exit(0);
+        }
+
+        Head head = Head.readFromFile();
+        Commit oldCommit = Commit.readFromFile(head.getCommitId());
+        Commit newCommit = new Commit(oldCommit.getId(), msg);
+
+        // TODO:
+        oldCommit.getFileName2blobId().forEach((fileName, blobId) -> {
+
+        });
+    }
+
+
+    /**
+     * rm command:  Unstage the file if it is currently staged for addition.
+     * If the file is tracked in the current commit,
+     * stage it for removal and remove the file from the working directory
+     * if the user has not already done so (do not remove it unless it is tracked in the current commit).
+     * @param fileName
+     */
+    public void rm (String fileName) {
+        checkInitialize();
+
+        File file = Utils.join(Repository.CWD, fileName);
+        if (!file.exists()) {
+            System.out.println("No reason to remove the file.");
+            System.exit(0);
+        }
+
+        if (file.isDirectory()) {
+            System.out.println("必须是文件");
+            System.exit(0);
+        }
+
+        do_rm(file);
+    }
+
+    private void do_rm(File file) {
+        String fileName = file.getName();
+        Staged staged = Staged.readFromFile();
+        Map<String, String> stagedForAdd = staged.getStagedForAdd();
+
+        if (stagedForAdd.containsKey(fileName)) {
+            stagedForAdd.remove(fileName);
+        }
+
+        Commit currentCommit = Head.readFromFile().getCurrentCommit();
+        if (currentCommit.getFileName2blobId().containsKey(fileName)) {
+            staged.getStagedForRemoval().add(fileName);
+        }
+
+        if (file.exists()) {
+            file.delete();
+        }
+
+        staged.save();
+    }
+
 
     /**
      * status:

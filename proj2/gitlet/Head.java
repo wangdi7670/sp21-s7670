@@ -36,6 +36,11 @@ public class Head implements Serializable, Dumpable {
         return head;
     }
 
+    public Commit getCurrentCommit() {
+        Commit currentCommit = Commit.readFromFile(commitId);
+        return currentCommit;
+    }
+
     public String getBranchName() {
         return branchName;
     }
