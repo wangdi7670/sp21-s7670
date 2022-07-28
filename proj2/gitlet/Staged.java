@@ -16,6 +16,15 @@ public class Staged implements Serializable, Dumpable {
     // private Map<String, String> stagedForRemoval;
     private Set<String> stagedForRemoval;
 
+    public static void main(String[] args) {
+        Set<String> set = new HashSet<>();
+        set.add("a");
+        set.add("b");
+        set.add("c");
+
+        List<String> list = new ArrayList<>(set);
+        System.out.println(list);
+    }
     private static final String FILE_NAME = "staging";
 
     /** 存储该对象的文件夹 */
@@ -90,6 +99,17 @@ public class Staged implements Serializable, Dumpable {
 
     @Override
     public void dump() {
-
+        System.out.println("Staged dump: ");
+        System.out.println("staged for addition = ");
+        List<String> forAdd = listAllStagedFileNamesForAdd();
+        for (String s : forAdd) {
+            System.out.println(s);
+        }
+        System.out.println("staged for removal = ");
+        List<String> forRemoval = listAllStagedFileNamesForRemoval();
+        for (String s : forRemoval) {
+            System.out.println(s);
+        }
+        System.out.println();
     }
 }

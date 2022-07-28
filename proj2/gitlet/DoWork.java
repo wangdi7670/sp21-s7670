@@ -1,7 +1,5 @@
 package gitlet;
 
-import org.apache.commons.math3.random.AbstractRandomGenerator;
-
 import java.io.File;
 import java.util.*;
 
@@ -221,7 +219,7 @@ public class DoWork {
         List<String> changesNotStaged = new ArrayList<>();
         List<String> untracked_files = new ArrayList<>();
 
-        showRest(staged_files, removed_files, changesNotStaged, untracked_files);
+        fill(staged_files, removed_files, changesNotStaged, untracked_files);
 
         showBranches();
         showStagedFilesForAdd(staged_files);
@@ -257,10 +255,10 @@ public class DoWork {
      * @param staged_files: staged for add
      * @param removed_files: staged for removal
      * @param changesNotStaged:
-     * @param untracked_files: 
+     * @param untracked_files:
      */
-    private void showRest(List<String> staged_files, List<String> removed_files,
-                          List<String> changesNotStaged, List<String> untracked_files) {
+    private void fill(List<String> staged_files, List<String> removed_files,
+                      List<String> changesNotStaged, List<String> untracked_files) {
         if (staged == null) {
             staged = Staged.readFromFile();
         }
@@ -295,7 +293,7 @@ public class DoWork {
         });
 
         // 遍历 staged for removal
-        removed_files = new ArrayList<>(stagedForRemoval);
+        removed_files.addAll(stagedForRemoval);
 
         if (plainFiles == null) {
             return;
@@ -308,21 +306,24 @@ public class DoWork {
             }
 
             // (1) Tracked in the current commit, changed in the working directory, but not staged;
-            // (4) Not staged for removal, but tracked in the current commit and deleted from the working directory
             if (fileName2blobId.containsKey(plainFileName)) {
                 boolean b = Repository.fileInCWDisNonEqual(plainFileName, fileName2blobId.get(plainFileName));
-                if (b) {
-                    // (1)
-                    if (!stagedForAdd.containsKey(plainFileName)) {
-                        changesNotStaged.add(plainFileName + " modified");
-                    }
-                    // (4)
-                    if (!stagedForRemoval.contains(plainFileName)) {
-                        changesNotStaged.add(plainFileName + " deleted");
-                    }
+                if (b && !stagedForAdd.containsKey(plainFileName)) {
+                    changesNotStaged.add(plainFileName + " (modified)");
                 }
             }
         }
+
+        // 遍历 当前commit 中跟踪的，却不在 cwd中
+        // (4) Not staged for removal, but tracked in the current commit and deleted from the working directory
+        fileName2blobId.forEach((fileName, blobId) -> {
+            if (!Repository.fileInCwdIsExist(fileName)) {
+                if (!stagedForRemoval.contains(fileName)) {
+                    changesNotStaged.add(fileName + " (deleted)");
+                }
+            }
+        });
+
 
     }
 

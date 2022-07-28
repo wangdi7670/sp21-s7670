@@ -94,5 +94,11 @@ public class Commit implements Serializable, Dumpable {
         System.out.println("msg: " + message + "\n"
         + "date: " + date + "\n"
         + "parent: " + parent + "\n");
+
+        System.out.println("tracked files: ");
+        for (String s : fileName2blobId.keySet()) {
+            System.out.println(s);
+        }
+        System.out.println();
     }
 }
