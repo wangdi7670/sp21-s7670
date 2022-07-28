@@ -207,6 +207,36 @@ public class DoWork {
         staged.save();
     }
 
+    /**
+     *  log command:
+     */
+    public void log() {
+        // TODO: merge commit
+        if (head == null) {
+            head = Head.readFromFile();
+        }
+
+        Commit commit = head.getCurrentCommit();
+        Commit temp = commit;
+
+        while (temp != null) {
+            System.out.println(temp);
+            temp = temp.getParentCommit();
+        }
+    }
+
+
+    /**
+     * global-log command:
+     */
+    public void global_log() {
+        List<String> list = Utils.plainFilenamesIn(Repository.COMMITS_DIR);
+        for (String s : list) {
+            Commit commit = Commit.readFromFile(s);
+            System.out.println(commit);
+        }
+    }
+
 
     /**
      * status:
@@ -354,6 +384,7 @@ public class DoWork {
         System.out.println("=== Untracked Files ===");
         display(untracked_files);
     }
+
 
 
 

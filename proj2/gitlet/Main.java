@@ -47,11 +47,12 @@ public class Main {
                 doWork.rm(args[1]);
                 break;
             case "log":
-
+                validArgsNumber("log", 1, args);
+                doWork.log();
                 break;
-
             case "global-log":
-
+                validArgsNumber("global-log", 1, args);
+                doWork.global_log();
                 break;
             case "find":
 

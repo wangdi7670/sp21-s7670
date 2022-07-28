@@ -2,12 +2,12 @@ package gitlet;
 
 // TODO: any imports you need here
 
-import javax.swing.*;
+
 import java.io.File;
 import java.io.Serializable;
-import java.util.Date; // TODO: You'll likely use this in this class
-import java.util.HashMap;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -39,21 +39,27 @@ public class Commit implements Serializable, Dumpable {
     private String parent;
 
     /** 创建时候的日期 */
-    private String date;
+    private String timeStamp;
 
     private Map<String, String> fileName2blobId;
 
     public Commit() {
-        this("null", "00:00:00 UTC, Thursday, 1 January 1970", "initial commit");
+        this("null", "Wed Dec 31 16:00:00 1969 -0800", "initial commit");
     }
 
     public Commit(String parent, String message) {
-        this(parent, new Date().toString(), message);
+        this(parent, dateToTimeStamp(new Date()), message);
     }
 
-    public Commit(String parent, String date, String message) {
+
+    private static String dateToTimeStamp(Date date) {
+        DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
+        return dateFormat.format(date);
+    }
+
+    public Commit(String parent, String timeStamp, String message) {
         this.parent = parent;
-        this.date = date;
+        this.timeStamp = timeStamp;
         this.message = message;
         fileName2blobId = new HashMap<>();
         setId();
@@ -67,18 +73,38 @@ public class Commit implements Serializable, Dumpable {
         Utils.writeObject(file, this);
     }
 
+    /**
+     * 根据id从文件中读取
+     * @param commitId
+     * @return
+     */
     public static Commit readFromFile(String commitId) {
         File file = Utils.join(FOLDER, commitId);
         Commit commit = Utils.readObject(file, Commit.class);
         return commit;
     }
 
+    /**
+     * 返回 parentCommit
+     * @return
+     */
+    public Commit getParentCommit() {
+        if (parent.equals("null")) {
+            return null;
+        }
+        return readFromFile(parent);
+    }
+
     private void setId() {
-        id = Utils.sha1(parent, date, message);
+        id = Utils.sha1(parent, timeStamp, message);
     }
 
     public String getId() {
         return id;
+    }
+
+    public String getParentId() {
+        return parent;
     }
 
     public Map<String, String> getFileName2blobId() {
@@ -90,9 +116,17 @@ public class Commit implements Serializable, Dumpable {
     }
 
     @Override
+    public String toString() {
+        return "==\n" +
+                "commit " + id + "\n" +
+                "Date: " + timeStamp + "\n" +
+                message + "\n";
+    }
+
+    @Override
     public void dump() {
         System.out.println("msg: " + message + "\n"
-        + "date: " + date + "\n"
+        + "date: " + timeStamp + "\n"
         + "parent: " + parent + "\n");
 
         System.out.println("tracked files: ");
