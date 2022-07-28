@@ -27,6 +27,17 @@ public class Blob implements Serializable, Dumpable {
         blobId = Utils.sha1(fileName, content);
     }
 
+    /**
+     * 根据文件名和文件内容计算文件的 sha-1 ID
+     * @param file
+     * @return
+     */
+    public static String computeFileId(File file) {
+        String fName = file.getName();
+        byte[] fContent = Utils.readContents(file);
+        return Utils.sha1(fName, fContent);
+    }
+
     public String getBlobId() {
         return blobId;
     }

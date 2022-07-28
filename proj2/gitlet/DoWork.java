@@ -1,6 +1,7 @@
 package gitlet;
 
-import java.beans.FeatureDescriptor;
+import org.apache.commons.math3.random.AbstractRandomGenerator;
+
 import java.io.File;
 import java.util.*;
 
@@ -9,6 +10,9 @@ import java.util.*;
  * @date: 2022/7/27 19:20
  */
 public class DoWork {
+    private Staged staged;
+
+    private Head head;
 
     private void checkInitialize() {
         if (!Repository.isInitialized()) {
@@ -70,11 +74,16 @@ public class DoWork {
         byte[] content = Utils.readContents(file);
         Blob blob = new Blob(fileName, content);
         blob.save();
-        Staged staged = Staged.readFromFile();
+        if (staged == null) {
+            staged = Staged.readFromFile();
+        }
+
         staged.getStagedForAdd().put(fileName, blob.getBlobId());
 
         // 加入的blob要是和当前commit中的版本一致，则从staged area中删除
-        Head head = Head.readFromFile();
+        if (head == null) {
+            head = Head.readFromFile();
+        }
         Commit currentCommit = Commit.readFromFile(head.getCommitId());
         Map<String, String> fileName2blobId = currentCommit.getFileName2blobId();
         if (fileName2blobId.containsKey(fileName)) {
@@ -108,13 +117,17 @@ public class DoWork {
 
     private void doCommit(String msg) {
         // create new commit
-        Head head = Head.readFromFile();
+        if (head == null) {
+            head = Head.readFromFile();
+        }
         Commit oldCommit = head.getCurrentCommit();
         Commit newCommit = new Commit(oldCommit.getId(), msg);
         newCommit.setFileName2blobId(oldCommit.getFileName2blobId());
 
         // get staged area
-        Staged staged = Staged.readFromFile();
+        if (staged == null) {
+            staged = Staged.readFromFile();
+        }
         Map<String, String> stagedForAdd = staged.getStagedForAdd();
         Map<String, String> fileName2blobId = newCommit.getFileName2blobId();
 
@@ -168,12 +181,14 @@ public class DoWork {
             System.exit(0);
         }
 
-        do_rm(file);
+        doRm(file);
     }
 
-    private void do_rm(File file) {
+    private void doRm(File file) {
         String fileName = file.getName();
-        Staged staged = Staged.readFromFile();
+        if (staged == null) {
+            staged = Staged.readFromFile();
+        }
         Map<String, String> stagedForAdd = staged.getStagedForAdd();
 
         // 如果在 staged area就删除
@@ -199,15 +214,28 @@ public class DoWork {
      * status:
      */
     public void status() {
+        checkInitialize();
+
+        List<String> staged_files = new ArrayList<>();
+        List<String> removed_files = new ArrayList<>();
+        List<String> changesNotStaged = new ArrayList<>();
+        List<String> untracked_files = new ArrayList<>();
+
+        showRest(staged_files, removed_files, changesNotStaged, untracked_files);
+
         showBranches();
-        showStagedFilesForAdd();
-        showStagedFilesForRemoval();
+        showStagedFilesForAdd(staged_files);
+        showStagedFilesForRemoval(removed_files);
+        showModificationsNotStagedForCommit(changesNotStaged);
+        showUntrackedFiles(untracked_files);
     }
 
     private void showBranches() {
         System.out.println("=== Branches ===");
 
-        Head head = Head.readFromFile();
+        if (head == null) {
+            head = Head.readFromFile();
+        }
         String currentBranch = head.getBranchName();
         System.out.println("*" + currentBranch);
 
@@ -223,50 +251,109 @@ public class DoWork {
         System.out.println();
     }
 
-    private void showStagedFilesForAdd() {
+
+    /**
+     * 遍历工作，暂存区，当前commit中的文件， 填充4个参数
+     * @param staged_files: staged for add
+     * @param removed_files: staged for removal
+     * @param changesNotStaged:
+     * @param untracked_files: 
+     */
+    private void showRest(List<String> staged_files, List<String> removed_files,
+                          List<String> changesNotStaged, List<String> untracked_files) {
+        if (staged == null) {
+            staged = Staged.readFromFile();
+        }
+        if (head == null) {
+            head = Head.readFromFile();
+        }
+        // 暂存区的
+        Map<String, String> stagedForAdd = staged.getStagedForAdd();
+        Set<String> stagedForRemoval = staged.getStagedForRemoval();
+        // 当前commit中的
+        Commit currentCommit = head.getCurrentCommit();
+        Map<String, String> fileName2blobId = currentCommit.getFileName2blobId();
+        // working directory 下的所有文件名
+        List<String> plainFiles = Utils.plainFilenamesIn(Repository.CWD);
+
+        /*
+        (1), (2), (3), (4)指的是 “modified but not staged”的情况
+         */
+
+        // 遍历 staged for add
+        stagedForAdd.forEach((fileName, blobId) -> {
+            staged_files.add(fileName);
+
+            // (2) Staged for addition, but with different contents than in the working directory;
+            if (Repository.fileInCwdIsExist(fileName) && Repository.fileInCWDisNonEqual(fileName, blobId)) {
+                changesNotStaged.add(fileName + " (modified)");
+            }
+            // (3) Staged for addition, but deleted in the working directory
+            if (!Repository.fileInCwdIsExist(fileName)) {
+                changesNotStaged.add(fileName + " (deleted)");
+            }
+        });
+
+        // 遍历 staged for removal
+        removed_files = new ArrayList<>(stagedForRemoval);
+
+        if (plainFiles == null) {
+            return;
+        }
+
+        // 遍历工作目录下的所有纯文件
+        for (String plainFileName : plainFiles) {
+            if (!stagedForAdd.containsKey(plainFileName) && !fileName2blobId.containsKey(plainFileName)) {
+                untracked_files.add(plainFileName);
+            }
+
+            // (1) Tracked in the current commit, changed in the working directory, but not staged;
+            // (4) Not staged for removal, but tracked in the current commit and deleted from the working directory
+            if (fileName2blobId.containsKey(plainFileName)) {
+                boolean b = Repository.fileInCWDisNonEqual(plainFileName, fileName2blobId.get(plainFileName));
+                if (b) {
+                    // (1)
+                    if (!stagedForAdd.containsKey(plainFileName)) {
+                        changesNotStaged.add(plainFileName + " modified");
+                    }
+                    // (4)
+                    if (!stagedForRemoval.contains(plainFileName)) {
+                        changesNotStaged.add(plainFileName + " deleted");
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void display(List<String> list) {
+        Collections.sort(list);
+        for (String s : list) {
+            System.out.println(s);
+        }
+        System.out.println();
+    }
+
+    private void showStagedFilesForAdd(List<String> staged_files) {
         System.out.println("=== Staged Files ===");
-        Staged staged = Staged.readFromFile();
-
-        List<String> strings = staged.listAllStagedFileNamesForAdd();
-        Collections.sort(strings);
-        for (String s : strings) {
-            System.out.println(s);
-        }
-
-        System.out.println();
+        display(staged_files);
     }
 
-    private void showStagedFilesForRemoval() {
+    private void showStagedFilesForRemoval(List<String> removed_files) {
         System.out.println("=== Removal Files ===");
-        Staged staged = Staged.readFromFile();
-
-        List<String> strings = staged.listAllStagedFileNamesForRemoval();
-        Collections.sort(strings);
-        for (String s : strings) {
-            System.out.println(s);
-        }
-        System.out.println();
+        display(removed_files);
     }
 
-
-    private void showModificationsNotStagedForCommit() {
+    private void showModificationsNotStagedForCommit(List<String> changesNotStaged) {
         System.out.println("=== Modifications Not Staged For Commit ===");
-
-        System.out.println();
+        display(changesNotStaged);
     }
 
-
-    private void showUntrackedFiles() {
+    private void showUntrackedFiles(List<String> untracked_files) {
         System.out.println("=== Untracked Files ===");
-
-        System.out.println();
+        display(untracked_files);
     }
 
 
-    public static void main(String[] args) {
-        // 按字典序排序
-        String[] strings = {"rea", "fads", "ad", "1dfa", "ac"};
-        Arrays.sort(strings);
-        System.out.println(Arrays.toString(strings));
-    }
+
 }

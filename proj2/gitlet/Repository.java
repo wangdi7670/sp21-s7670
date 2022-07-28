@@ -1,5 +1,6 @@
 package gitlet;
 
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.io.File;
 import static gitlet.Utils.*;
 
@@ -59,6 +60,9 @@ public class Repository {
         destroy();
     }
 
+    /**
+     * 删除 .gitlet 目录及子目录，文件
+     */
     public static void destroy() {
         delete(GITLET_DIR.getPath());
     }
@@ -103,5 +107,25 @@ public class Repository {
             throw new GitletException("文件已经存在");
         }
         file.mkdir();
+    }
+
+    /**
+     * 工作区下的某文件是否存在
+     * @return
+     */
+    public static boolean fileInCwdIsExist(String fileName) {
+        File file = join(Repository.CWD, fileName);
+        return file.exists() && file.isFile();
+    }
+
+    /**
+     * cwd下的某文件的 sha1-id 是否和 给定的blobID 不相等
+     * @param fileName: cwd 下的文件名
+     * @param blobId:
+     * @return
+     */
+    public static boolean fileInCWDisNonEqual(String fileName, String blobId) {
+        File file = join(Repository.CWD, fileName);
+        return !Blob.computeFileId(file).equals(blobId);
     }
 }
