@@ -89,25 +89,61 @@ public class DoWork {
 
     /**
      * commit 命令: When we commit, only the HEAD and active branch move
+     *
      * @param msg
      */
     public void commit(String msg) {
+        // 1. 检查初始化
         checkInitialize();
 
+        // 2. staging area 要是空的话就直接退出
         Staged staged = Staged.readFromFile();
         if (staged.getStagedForRemoval().isEmpty() && staged.getStagedForAdd().isEmpty()) {
             System.out.println("No changes added to the commit.");
             System.exit(0);
         }
 
+        doCommit(msg);
+    }
+
+    private void doCommit(String msg) {
+        // create new commit
         Head head = Head.readFromFile();
-        Commit oldCommit = Commit.readFromFile(head.getCommitId());
+        Commit oldCommit = head.getCurrentCommit();
         Commit newCommit = new Commit(oldCommit.getId(), msg);
+        newCommit.setFileName2blobId(oldCommit.getFileName2blobId());
 
-        // TODO:
-        oldCommit.getFileName2blobId().forEach((fileName, blobId) -> {
+        // get staged area
+        Staged staged = Staged.readFromFile();
+        Map<String, String> stagedForAdd = staged.getStagedForAdd();
+        Map<String, String> fileName2blobId = newCommit.getFileName2blobId();
 
-        });
+        // staged for addition
+        for (Map.Entry<String, String> entry : stagedForAdd.entrySet()) {
+            String fileName = entry.getKey();
+            String blobId = entry.getValue();
+            fileName2blobId.put(fileName, blobId);
+        }
+
+        // staged for removal
+        Set<String> stagedForRemoval = staged.getStagedForRemoval();
+        for (String fileName : stagedForRemoval) {
+            fileName2blobId.remove(fileName);
+        }
+
+        // clear staged
+        staged.clearStaged();
+
+        // move branch and HEAD
+        Branch currentBranch = head.getCurrentBranch();
+        currentBranch.move(newCommit.getId());
+        head.move(currentBranch.getBranchName(), currentBranch.getCommitId());
+
+        // persistence
+        staged.save();
+        newCommit.save();
+        head.save();
+        currentBranch.save();
     }
 
 
@@ -140,10 +176,12 @@ public class DoWork {
         Staged staged = Staged.readFromFile();
         Map<String, String> stagedForAdd = staged.getStagedForAdd();
 
+        // 如果在 staged area就删除
         if (stagedForAdd.containsKey(fileName)) {
             stagedForAdd.remove(fileName);
         }
 
+        // 如果在当前commit中，就给他放到staged for removal
         Commit currentCommit = Head.readFromFile().getCurrentCommit();
         if (currentCommit.getFileName2blobId().containsKey(fileName)) {
             staged.getStagedForRemoval().add(fileName);

@@ -40,6 +40,22 @@ public class Branch implements Serializable, Dumpable {
         Utils.writeObject(file, this);
     }
 
+    /**
+     * 从文件中读出Branch
+     * @param branchName
+     * @return
+     */
+    public static Branch readBranchFromFile(String branchName) {
+        File file = Utils.join(FOLDER, branchName);
+        Branch branch = Utils.readObject(file, Branch.class);
+        return branch;
+    }
+
+    public void move(String commitId) {
+        this.commitId = commitId;
+    }
+
+
     public String getBranchName() {
         return branchName;
     }

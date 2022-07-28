@@ -13,6 +13,8 @@ import java.util.Map;
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *  简化版本的 gitlet 不考虑子目录
+ *
+ *  When we commit, only the HEAD and active branch move
  *  @author TODO
  */
 public class Commit implements Serializable, Dumpable {

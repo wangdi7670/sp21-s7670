@@ -10,6 +10,11 @@ public class Main {
      */
     public static void main(String[] args) {
         // TODO: what if args is empty?
+        if (args.length == 0) {
+            System.out.println("You don't input command");
+            System.exit(0);
+        }
+
         String firstArg = args[0];
         DoWork doWork = new DoWork();
 

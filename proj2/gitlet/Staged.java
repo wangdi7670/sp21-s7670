@@ -44,12 +44,20 @@ public class Staged implements Serializable, Dumpable {
         Utils.writeObject(f, this);
     }
 
+    /**
+     * 读出 staged 对象
+     * @return
+     */
     public static Staged readFromFile() {
         File f = Utils.join(FOLDER, FILE_NAME);
         Staged staged = Utils.readObject(f, Staged.class);
         return staged;
     }
 
+    /**
+     * 列出 staged area for addition 中的所有文件名
+     * @return
+     */
     public List<String> listAllStagedFileNamesForAdd() {
         Set<String> strings = stagedForAdd.keySet();
         List<String> list = new ArrayList<>();
@@ -60,6 +68,10 @@ public class Staged implements Serializable, Dumpable {
         return list;
     }
 
+    /**
+     * 列出所有 staged for removal 中的文件名
+     * @return
+     */
     public List<String> listAllStagedFileNamesForRemoval() {
         List<String> list = new ArrayList<>();
 
@@ -68,6 +80,13 @@ public class Staged implements Serializable, Dumpable {
         }
         return list;
     }
+
+
+    public void clearStaged() {
+        stagedForAdd.clear();
+        stagedForRemoval.clear();
+    }
+
 
     @Override
     public void dump() {
