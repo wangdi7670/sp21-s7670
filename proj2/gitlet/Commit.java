@@ -103,9 +103,6 @@ public class Commit implements Serializable, Dumpable {
         return id;
     }
 
-    public String getParentId() {
-        return parent;
-    }
 
     public Map<String, String> getFileName2blobId() {
         return fileName2blobId;
@@ -134,5 +131,9 @@ public class Commit implements Serializable, Dumpable {
             System.out.println(s);
         }
         System.out.println();
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

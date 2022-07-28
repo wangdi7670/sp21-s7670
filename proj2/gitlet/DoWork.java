@@ -237,6 +237,25 @@ public class DoWork {
         }
     }
 
+    /**
+     * find command: Prints out the ids of all commits that have the given commit message, one per line
+     */
+    public void find(String commitMessage) {
+        List<String> list = Utils.plainFilenamesIn(Repository.COMMITS_DIR);
+        // flag 表示有没有和commitMessage对应的commit
+        boolean flag = false;
+        for (String fileName : list) {
+            Commit commit = Commit.readFromFile(fileName);
+            if (commit.getMessage().equals(commitMessage)) {
+                flag = true;
+                System.out.println(commit.getId());
+            }
+        }
+
+        if (!flag) {
+            System.out.println("Found no commit with that message");
+        }
+    }
 
     /**
      * status:
@@ -386,6 +405,8 @@ public class DoWork {
     }
 
 
+    public void checkout(String... args) {
 
+    }
 
 }

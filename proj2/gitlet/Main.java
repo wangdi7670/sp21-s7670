@@ -55,12 +55,15 @@ public class Main {
                 doWork.global_log();
                 break;
             case "find":
-
+                validArgsNumber("find", 2, args);
+                doWork.find(args[1]);
                 break;
             case "status":
                 validArgsNumber("status", 1, args);
                 doWork.status();
                 break;
+            case "checkout":
+
         }
     }
 
