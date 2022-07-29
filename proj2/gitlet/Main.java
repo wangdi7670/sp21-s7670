@@ -63,14 +63,17 @@ public class Main {
                 break;
             case "checkout":
                 doWork.checkout(args);
+                break;
             case "branch":
                 //
                 validArgsNumber("branch", 2, args);
                 doWork.branch(args[1]);
-            case "tm-branch":
+                break;
+            case "rm-branch":
                 // java gitlet.Main rm-branch [branch name]
                 validArgsNumber("rm-branch", 2, args);
                 doWork.rmBranch(args[1]);
+                break;
 
         }
     }

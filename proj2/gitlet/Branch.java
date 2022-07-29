@@ -96,6 +96,14 @@ public class Branch implements Serializable, Dumpable {
     }
 
     @Override
+    public String toString() {
+        return "Branch{" +
+                "commitId='" + commitId + '\'' +
+                ", branchName='" + branchName + '\'' +
+                '}';
+    }
+
+    @Override
     public void dump() {
         System.out.println("branchName: " + branchName);
         System.out.println("===");

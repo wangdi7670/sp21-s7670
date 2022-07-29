@@ -8,9 +8,9 @@ import java.util.*;
  * @date: 2022/7/27 19:20
  */
 public class DoWork {
-    private Staged staged = Staged.readFromFile();
+    private Staged staged;
 
-    private Head head = Head.readFromFile();
+    private Head head;
 
     private void checkInitialize() {
         if (!Repository.isInitialized()) {
@@ -404,7 +404,6 @@ public class DoWork {
         display(untracked_files);
     }
 
-
     /**
      * checkout:
      *  (1):
@@ -442,6 +441,7 @@ public class DoWork {
                 System.exit(0);
             }
 
+            head = head == null ? Head.readFromFile() : head;
             if (head.getBranchName().equals(branchName)) {
                 System.out.println("No need to checkout the current branch.");
                 System.exit(0);
@@ -511,9 +511,11 @@ public class DoWork {
      */
     private boolean untrackedFiledExist() {
         // 暂存区的
+        staged = staged == null ? Staged.readFromFile() : staged;
         Map<String, String> stagedForAdd = staged.getStagedForAdd();
 
         // 当前commit中跟踪的
+        head = head == null ? Head.readFromFile() : head;
         Commit currentCommit = head.getCurrentCommit();
         Map<String, String> fileName2blobId = currentCommit.getFileName2blobId();
 
@@ -538,6 +540,7 @@ public class DoWork {
         staged.save();
 
         Branch branch = Branch.readBranchFromFile(branchName);
+        head = head == null ? Head.readFromFile() : head;
         Commit currentCommit = head.getCurrentCommit();
 
         Commit branch2commit = branch.getCommit();
@@ -554,6 +557,7 @@ public class DoWork {
             }
         }
 
+        head = head == null ? Head.readFromFile() : head;
         head.move(branch.getBranchName(), branch.getCommitId());
         head.save();
     }
@@ -563,16 +567,20 @@ public class DoWork {
      * @param branchName
      */
     public void branch(String branchName) {
-        if (!Branch.isBranchExist(branchName)) {
+        if (Branch.isBranchExist(branchName)) {
             System.out.println("A branch with that name already exists.");
             System.exit(0);
         }
 
         head = head == null ? Head.readFromFile() : head;
-        Branch branch = new Branch(head.getCommitId(), branchName);
-        branch.save();
+        Branch newBranch = new Branch(head.getCommitId(), branchName);
+        newBranch.save();
     }
 
+    public static void main(String[] args) {
+        DoWork doWork = new DoWork();
+        doWork.branch("b2");
+    }
 
     /**
      * rm-branch: 删除分支, 只删除指针，不删commit
@@ -584,6 +592,7 @@ public class DoWork {
             System.exit(0);
         }
 
+        head = head == null ? Head.readFromFile() : head;
         String currentBranchName = head.getBranchName();
         if (currentBranchName.equals(branchName)) {
             System.out.println("Cannot remove the current branch.");
