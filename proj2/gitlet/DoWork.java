@@ -405,8 +405,55 @@ public class DoWork {
     }
 
 
+    /**
+     * checkout:
+     * @param args
+     */
     public void checkout(String... args) {
+        // System.out.println(Arrays.toString(args));
 
+        // java gitlet.Main checkout -- [file name]
+        if (args.length == 3) {
+            String fileName = args[2];
+            head = head == null ? Head.readFromFile() : head;
+            replaceByCommitId(head.getCommitId(), fileName);
+        }
+        // java gitlet.Main checkout [commit id] -- [file name]
+        else if (args.length == 4) {
+            String commitId = args[1];
+            String fileName = args[3];
+            replaceByCommitId(commitId, fileName);
+        }
+        // java gitlet.Main checkout [branch name]
+        else if (args.length == 2) {
+            String branchName = args[1];
+        }
+        else {
+            System.out.println("wrong number of args");
+        }
+    }
+
+    private void replaceByCommitId(String commitId, String fileName) {
+        Commit commit = Commit.readFromFile(commitId);
+        if (commit == null) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        Map<String, String> fileName2blobId = commit.getFileName2blobId();
+        if (!fileName2blobId.containsKey(fileName)) {
+            System.out.println("File does not exist in that commit.");
+            System.exit(0);
+        }
+
+        doReplace(fileName, fileName2blobId);
+    }
+
+    private void doReplace(String fileName, Map<String, String> fileName2blobId) {
+        File cwdFile = Utils.join(Repository.CWD, fileName);
+        String blobId = fileName2blobId.get(fileName);
+        Blob blob = Blob.readFromFile(blobId);
+        assert blob != null;
+        Utils.writeContents(cwdFile, blob.getContent());
     }
 
 }

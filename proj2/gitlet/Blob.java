@@ -20,6 +20,10 @@ public class Blob implements Serializable, Dumpable {
         setId();
     }
 
+    public byte[] getContent() {
+        return content;
+    }
+
     public void setId() {
         if (fileName == null || content == null) {
             return;
@@ -48,6 +52,21 @@ public class Blob implements Serializable, Dumpable {
     public void save() {
         File f = Utils.join(Repository.BLOBS_DIR, blobId);
         Utils.writeObject(f, this);
+    }
+
+    /**
+     * 根据blobId读出相应的Blob对象，如果不存在相应的blobId，则返回null
+     * @param blobId
+     * @return
+     */
+    public static Blob readFromFile(String blobId) {
+        File file = Utils.join(Repository.BLOBS_DIR, blobId);
+        if (!file.exists()) {
+            return null;
+        }
+
+        Blob blob = Utils.readObject(file, Blob.class);
+        return blob;
     }
 
     @Override

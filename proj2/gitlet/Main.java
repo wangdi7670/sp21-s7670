@@ -63,7 +63,7 @@ public class Main {
                 doWork.status();
                 break;
             case "checkout":
-
+                doWork.checkout(args);
         }
     }
 

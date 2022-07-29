@@ -80,6 +80,9 @@ public class Commit implements Serializable, Dumpable {
      */
     public static Commit readFromFile(String commitId) {
         File file = Utils.join(FOLDER, commitId);
+        if (!file.exists()) {
+            return null;
+        }
         Commit commit = Utils.readObject(file, Commit.class);
         return commit;
     }
