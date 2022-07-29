@@ -8,9 +8,9 @@ import java.util.*;
  * @date: 2022/7/27 19:20
  */
 public class DoWork {
-    private Staged staged;
+    private Staged staged = Staged.readFromFile();
 
-    private Head head;
+    private Head head = Head.readFromFile();
 
     private void checkInitialize() {
         if (!Repository.isInitialized()) {
@@ -321,7 +321,7 @@ public class DoWork {
         Commit currentCommit = head.getCurrentCommit();
         Map<String, String> fileName2blobId = currentCommit.getFileName2blobId();
         // working directory 下的所有文件名
-        List<String> plainFiles = Utils.plainFilenamesIn(Repository.CWD);
+        List<String> plainFilesInCWD = Utils.plainFilenamesIn(Repository.CWD);
 
         /*
         (1), (2), (3), (4)指的是 “modified but not staged”的情况
@@ -344,12 +344,12 @@ public class DoWork {
         // 遍历 staged for removal
         removed_files.addAll(stagedForRemoval);
 
-        if (plainFiles == null) {
+        if (plainFilesInCWD == null) {
             return;
         }
 
         // 遍历工作目录下的所有纯文件
-        for (String plainFileName : plainFiles) {
+        for (String plainFileName : plainFilesInCWD) {
             if (!stagedForAdd.containsKey(plainFileName) && !fileName2blobId.containsKey(plainFileName)) {
                 untracked_files.add(plainFileName);
             }
@@ -407,11 +407,12 @@ public class DoWork {
 
     /**
      * checkout:
+     *  (1):
+     *  (2):
+     *  (3): 切换分支时候不考虑 staged area, 直接清空 staged area
      * @param args
      */
     public void checkout(String... args) {
-        // System.out.println(Arrays.toString(args));
-
         // java gitlet.Main checkout -- [file name]
         if (args.length == 3) {
             if (!args[1].equals("--")) {
@@ -436,12 +437,33 @@ public class DoWork {
         else if (args.length == 2) {
             String branchName = args[1];
             // TODO:
+            if (!Branch.isBranchExist(branchName)) {
+                System.out.println("No such branch exists.");
+                System.exit(0);
+            }
+
+            if (head.getBranchName().equals(branchName)) {
+                System.out.println("No need to checkout the current branch.");
+                System.exit(0);
+            }
+
+            if (untrackedFiledExist()) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+            }
+
+            doSwitch(branchName);
         }
         else {
-            System.out.println("wrong number of args");
+            System.out.println("wrong args");
         }
     }
 
+    /**
+     * 通过commitId 给定一个commit, 把当前目录下的 file 的内容替换成那个commit的file内容
+     * @param commitId
+     * @param fileName
+     */
     private void replaceByCommitId(String commitId, String fileName) {
         Commit commit = null;
         // 如果输入的commitId是 abbreviation
@@ -467,25 +489,81 @@ public class DoWork {
             System.exit(0);
         }
 
-        doReplace(fileName, fileName2blobId);
+        doReplace(fileName, fileName2blobId.get(fileName));
     }
 
-    private void doReplace(String fileName, Map<String, String> fileName2blobId) {
+    /**+
+     * 将 CWD 下的文件内容替换成 blobId 指向的内容
+     *
+     * @param fileName
+     * @param blobId
+     */
+    private void doReplace(String fileName, String blobId) {
         File cwdFile = Utils.join(Repository.CWD, fileName);
-        String blobId = fileName2blobId.get(fileName);
         Blob blob = Blob.readFromFile(blobId);
         assert blob != null;
         Utils.writeContents(cwdFile, blob.getContent());
     }
 
+    /**
+     * CWD 下是否有没跟踪的文件
+     * @return
+     */
+    private boolean untrackedFiledExist() {
+        // 暂存区的
+        Map<String, String> stagedForAdd = staged.getStagedForAdd();
+
+        // 当前commit中跟踪的
+        Commit currentCommit = head.getCurrentCommit();
+        Map<String, String> fileName2blobId = currentCommit.getFileName2blobId();
+
+        List<String> plainFilesInCWD = Utils.plainFilenamesIn(Repository.CWD);
+
+        assert plainFilesInCWD != null;
+        for (String plainFileName : plainFilesInCWD) {
+            if (!stagedForAdd.containsKey(plainFileName) && !fileName2blobId.containsKey(plainFileName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 切换分支
+     * @param branchName
+     */
+    private void doSwitch(String branchName) {
+        staged.clearStaged();
+        staged.save();
+
+        Branch branch = Branch.readBranchFromFile(branchName);
+        Commit currentCommit = head.getCurrentCommit();
+
+        Commit branch2commit = branch.getCommit();
+
+        // 要切换的分支中跟踪的文件，直接放到 CWD 下
+        for (String file : branch2commit.listAllTrackedFiles()) {
+            Repository.write2fileInCWD(file, branch2commit.getTrackedFileBlobId(file));
+        }
+
+        // 当前切换的分支下跟踪的文件，但要切换的分支中不跟踪，那就从 CWD 下删除
+        for (String fileInCurrentCommit : currentCommit.listAllTrackedFiles()) {
+            if (!branch2commit.isTrackedFile(fileInCurrentCommit)) {
+                Repository.deleteFileInCWD(fileInCurrentCommit);
+            }
+        }
+
+        head.move(branch.getBranchName(), branch.getCommitId());
+        head.save();
+    }
 
     /**
      * branch command
      * @param branchName
      */
     public void branch(String branchName) {
-        File file = Utils.join(Repository.BRANCHES, branchName);
-        if (file.exists()) {
+        if (!Branch.isBranchExist(branchName)) {
             System.out.println("A branch with that name already exists.");
             System.exit(0);
         }
@@ -493,5 +571,31 @@ public class DoWork {
         head = head == null ? Head.readFromFile() : head;
         Branch branch = new Branch(head.getCommitId(), branchName);
         branch.save();
+    }
+
+
+    /**
+     * rm-branch: 删除分支, 只删除指针，不删commit
+     * @param branchName:
+     */
+    public void rmBranch(String branchName) {
+        if (!Branch.isBranchExist(branchName)) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+
+        String currentBranchName = head.getBranchName();
+        if (currentBranchName.equals(branchName)) {
+            System.out.println("Cannot remove the current branch.");
+        }
+
+        doRmBranch(branchName);
+    }
+
+    private void doRmBranch(String branchName) {
+        File file = Utils.join(Repository.BRANCHES, branchName);
+        if (file.isFile()) {
+            file.delete();
+        }
     }
 }

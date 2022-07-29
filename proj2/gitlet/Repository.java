@@ -1,6 +1,5 @@
 package gitlet;
 
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.io.File;
 import static gitlet.Utils.*;
 
@@ -56,9 +55,7 @@ public class Repository {
 
     public static final File STAGING_AREA = join(GITLET_DIR, "staged");
 
-    public static void main(String[] args) {
-        destroy();
-    }
+
 
     /**
      * 删除 .gitlet 目录及子目录，文件
@@ -127,5 +124,29 @@ public class Repository {
     public static boolean fileInCWDisNonEqual(String fileName, String blobId) {
         File file = join(Repository.CWD, fileName);
         return !Blob.computeFileId(file).equals(blobId);
+    }
+
+    /**
+     * 向工作目录中的文件写入blobId对应的文件
+     * @param fileName
+     * @param blobId
+     */
+    public static void write2fileInCWD(String fileName, String blobId) {
+        File file = Utils.join(CWD, fileName);
+        Blob blob = Blob.readFromFile(blobId);
+        assert blob != null;
+        Utils.writeContents(file, blob.getContent());
+    }
+
+    /**
+     * 删除 cwd 下的文件
+     * @param fileName
+     */
+    public static void deleteFileInCWD(String fileName) {
+        File file = Utils.join(CWD, fileName);
+        file.delete();
+    }
+
+    public static void main(String[] args) {
     }
 }

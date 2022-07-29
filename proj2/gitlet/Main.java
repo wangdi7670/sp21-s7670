@@ -67,6 +67,11 @@ public class Main {
                 //
                 validArgsNumber("branch", 2, args);
                 doWork.branch(args[1]);
+            case "tm-branch":
+                // java gitlet.Main rm-branch [branch name]
+                validArgsNumber("rm-branch", 2, args);
+                doWork.rmBranch(args[1]);
+
         }
     }
 

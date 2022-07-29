@@ -98,6 +98,32 @@ public class Commit implements Serializable, Dumpable {
         return readFromFile(parent);
     }
 
+    /**
+     * 该commit 是否跟踪了某个文件
+     * @param fileName
+     * @return
+     */
+    public boolean isTrackedFile(String fileName) {
+        return fileName2blobId.containsKey(fileName);
+    }
+
+    /**
+     * 获取跟踪的文件的id
+     * @param fileName: 跟踪的文件
+     * @return : 对应的id，没有就返回null
+     */
+    public String getTrackedFileBlobId(String fileName) {
+        return fileName2blobId.get(fileName);
+    }
+
+    /**
+     * 返回所有跟踪的文件
+     * @return
+     */
+    public Set<String> listAllTrackedFiles() {
+        return fileName2blobId.keySet();
+    }
+
     private void setId() {
         id = Utils.sha1(parent, timeStamp, message);
     }

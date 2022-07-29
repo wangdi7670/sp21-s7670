@@ -47,8 +47,31 @@ public class Branch implements Serializable, Dumpable {
      */
     public static Branch readBranchFromFile(String branchName) {
         File file = Utils.join(FOLDER, branchName);
+        if (!file.exists()) {
+            return null;
+        }
+
         Branch branch = Utils.readObject(file, Branch.class);
         return branch;
+    }
+
+    /**
+     * 获取该branch指向的 commit
+     * @return :
+     */
+    public Commit getCommit() {
+        Commit commit = Commit.readFromFile(commitId);
+        return commit;
+    }
+
+    /**
+     * 判断某个分支是否存在
+     * @param branchName
+     * @return
+     */
+    public static boolean isBranchExist(String branchName) {
+        File file = Utils.join(Repository.BRANCHES, branchName);
+        return file.exists();
     }
 
     public void move(String commitId) {

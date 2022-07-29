@@ -91,6 +91,9 @@ public class Staged implements Serializable, Dumpable {
     }
 
 
+    /**
+     * 清空staged area
+     */
     public void clearStaged() {
         stagedForAdd.clear();
         stagedForRemoval.clear();
