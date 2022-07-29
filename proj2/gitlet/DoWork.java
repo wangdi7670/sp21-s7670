@@ -632,15 +632,21 @@ public class DoWork {
     private void doReset(Commit givenCommit) {
         head = head == null ? Head.readFromFile() : head;
         Commit currentCommit = head.getCurrentCommit();
+
+        // Removes tracked files that are not present in that commit.
         for (String trackedFile : currentCommit.listAllTrackedFiles()) {
             if (!givenCommit.isTrackedFile(trackedFile)) {
                 Repository.deleteFileInCWD(trackedFile);
             }
         }
 
+        // givenCommit overwrite CWD
         for (String trackedFile : givenCommit.listAllTrackedFiles()) {
             Repository.write2fileInCWD(trackedFile, givenCommit.getTrackedFileBlobId(trackedFile));
         }
+
+        staged = staged == null ? Staged.readFromFile() : staged;
+        staged.clearStaged();
 
         head.move(head.getBranchName(), givenCommit.getCommitId());
         head.save();
