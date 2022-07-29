@@ -74,6 +74,10 @@ public class Main {
                 validArgsNumber("rm-branch", 2, args);
                 doWork.rmBranch(args[1]);
                 break;
+            case "reset":
+                validArgsNumber("reset", 2, args);
+                doWork.reset(args[1]);
+                break;
 
         }
     }

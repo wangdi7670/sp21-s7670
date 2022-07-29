@@ -37,8 +37,8 @@ public class DoWork {
 
         // 初始化
         Commit initCommit = new Commit();
-        Branch branch = new Branch(initCommit.getId(), "master");
-        Head head = new Head(branch.getBranchName(), initCommit.getId());
+        Branch branch = new Branch(initCommit.getCommitId(), "master");
+        Head head = new Head(branch.getBranchName(), initCommit.getCommitId());
         Staged staged = new Staged();
 
         // 持久化
@@ -119,7 +119,7 @@ public class DoWork {
             head = Head.readFromFile();
         }
         Commit oldCommit = head.getCurrentCommit();
-        Commit newCommit = new Commit(oldCommit.getId(), msg);
+        Commit newCommit = new Commit(oldCommit.getCommitId(), msg);
         newCommit.setFileName2blobId(oldCommit.getFileName2blobId());
 
         // get staged area
@@ -147,7 +147,7 @@ public class DoWork {
 
         // move branch and HEAD
         Branch currentBranch = head.getCurrentBranch();
-        currentBranch.move(newCommit.getId());
+        currentBranch.move(newCommit.getCommitId());
         head.move(currentBranch.getBranchName(), currentBranch.getCommitId());
 
         // persistence
@@ -248,7 +248,7 @@ public class DoWork {
             Commit commit = Commit.readFromFile(fileName);
             if (commit.getMessage().equals(commitMessage)) {
                 flag = true;
-                System.out.println(commit.getId());
+                System.out.println(commit.getCommitId());
             }
         }
 
@@ -435,7 +435,6 @@ public class DoWork {
         // java gitlet.Main checkout [branch name]
         else if (args.length == 2) {
             String branchName = args[1];
-            // TODO:
             if (!Branch.isBranchExist(branchName)) {
                 System.out.println("No such branch exists.");
                 System.exit(0);
@@ -447,7 +446,7 @@ public class DoWork {
                 System.exit(0);
             }
 
-            if (untrackedFiledExist()) {
+            if (!getUntrackedFiles().isEmpty()) {
                 System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                 System.exit(0);
             }
@@ -509,7 +508,7 @@ public class DoWork {
      * CWD 下是否有没跟踪的文件
      * @return
      */
-    private boolean untrackedFiledExist() {
+    private List<String> getUntrackedFiles() {
         // 暂存区的
         staged = staged == null ? Staged.readFromFile() : staged;
         Map<String, String> stagedForAdd = staged.getStagedForAdd();
@@ -521,14 +520,15 @@ public class DoWork {
 
         List<String> plainFilesInCWD = Utils.plainFilenamesIn(Repository.CWD);
 
+        List<String> untracked_files = new ArrayList<>();
         assert plainFilesInCWD != null;
         for (String plainFileName : plainFilesInCWD) {
             if (!stagedForAdd.containsKey(plainFileName) && !fileName2blobId.containsKey(plainFileName)) {
-                return true;
+                untracked_files.add(plainFileName);
             }
         }
 
-        return false;
+        return untracked_files;
     }
 
     /**
@@ -577,10 +577,6 @@ public class DoWork {
         newBranch.save();
     }
 
-    public static void main(String[] args) {
-        DoWork doWork = new DoWork();
-        doWork.branch("b2");
-    }
 
     /**
      * rm-branch: 删除分支, 只删除指针，不删commit
@@ -606,5 +602,47 @@ public class DoWork {
         if (file.isFile()) {
             file.delete();
         }
+    }
+
+
+    /**
+     * Checks out all the files tracked by the given commit.
+     * Removes tracked files that are not present in that commit.
+     * @param commitId
+     */
+    public void reset(String commitId) {
+        checkInitialize();
+        Commit givenCommit = Commit.readFromFile(commitId);
+        if (givenCommit == null) {
+            System.out.println("No commit with that id exists");
+            System.exit(0);
+        }
+
+        List<String> untrackedFiles = getUntrackedFiles();
+        for (String untrackedFile : untrackedFiles) {
+            if (givenCommit.isTrackedFile(untrackedFile)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+            }
+        }
+
+        doReset(givenCommit);
+    }
+
+    private void doReset(Commit givenCommit) {
+        head = head == null ? Head.readFromFile() : head;
+        Commit currentCommit = head.getCurrentCommit();
+        for (String trackedFile : currentCommit.listAllTrackedFiles()) {
+            if (!givenCommit.isTrackedFile(trackedFile)) {
+                Repository.deleteFileInCWD(trackedFile);
+            }
+        }
+
+        for (String trackedFile : givenCommit.listAllTrackedFiles()) {
+            Repository.write2fileInCWD(trackedFile, givenCommit.getTrackedFileBlobId(trackedFile));
+        }
+
+        head.move(head.getBranchName(), givenCommit.getCommitId());
+        head.save();
     }
 }

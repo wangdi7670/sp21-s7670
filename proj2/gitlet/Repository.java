@@ -144,7 +144,9 @@ public class Repository {
      */
     public static void deleteFileInCWD(String fileName) {
         File file = Utils.join(CWD, fileName);
-        file.delete();
+        if (file.exists() && file.isFile()) {
+            file.delete();
+        }
     }
 
     public static void main(String[] args) {

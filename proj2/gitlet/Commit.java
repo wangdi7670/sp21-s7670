@@ -30,7 +30,7 @@ public class Commit implements Serializable, Dumpable {
      */
 
     /** sha-1算法生成id */
-    private String id;
+    private String commitId;
 
     /** The message of this Commit. */
     private String message;
@@ -69,7 +69,7 @@ public class Commit implements Serializable, Dumpable {
      * 文件名是 id
      */
     public void save() {
-        File file = Utils.join(FOLDER, id);
+        File file = Utils.join(FOLDER, commitId);
         Utils.writeObject(file, this);
     }
 
@@ -125,11 +125,11 @@ public class Commit implements Serializable, Dumpable {
     }
 
     private void setId() {
-        id = Utils.sha1(parent, timeStamp, message);
+        commitId = Utils.sha1(parent, timeStamp, message);
     }
 
-    public String getId() {
-        return id;
+    public String getCommitId() {
+        return commitId;
     }
 
 
@@ -144,7 +144,7 @@ public class Commit implements Serializable, Dumpable {
     @Override
     public String toString() {
         return "==\n" +
-                "commit " + id + "\n" +
+                "commit " + commitId + "\n" +
                 "Date: " + timeStamp + "\n" +
                 message + "\n";
     }
