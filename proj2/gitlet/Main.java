@@ -23,16 +23,15 @@ public class Main {
                 Repository.destroy();
                 break;
             case "init":
-                // TODO: handle the `init` command
+                //
                 validArgsNumber("init", 1, args);
                 doWork.init();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
+                //
                 validArgsNumber("add", 2, args);
                 doWork.add(args[1]);
                 break;
-            // TODO: FILL THE REST IN
             case "commit":
                 try {
                     validArgsNumber("commit", 2, args);
@@ -64,6 +63,10 @@ public class Main {
                 break;
             case "checkout":
                 doWork.checkout(args);
+            case "branch":
+                //
+                validArgsNumber("branch", 2, args);
+                doWork.branch(args[1]);
         }
     }
 

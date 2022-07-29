@@ -414,12 +414,20 @@ public class DoWork {
 
         // java gitlet.Main checkout -- [file name]
         if (args.length == 3) {
+            if (!args[1].equals("--")) {
+                System.out.println("wrong operand");
+                return;
+            }
             String fileName = args[2];
             head = head == null ? Head.readFromFile() : head;
             replaceByCommitId(head.getCommitId(), fileName);
         }
         // java gitlet.Main checkout [commit id] -- [file name]
         else if (args.length == 4) {
+            if (!args[2].equals("--")) {
+                System.out.println("wrong operand");
+                return;
+            }
             String commitId = args[1];
             String fileName = args[3];
             replaceByCommitId(commitId, fileName);
@@ -427,6 +435,7 @@ public class DoWork {
         // java gitlet.Main checkout [branch name]
         else if (args.length == 2) {
             String branchName = args[1];
+            // TODO:
         }
         else {
             System.out.println("wrong number of args");
@@ -434,7 +443,20 @@ public class DoWork {
     }
 
     private void replaceByCommitId(String commitId, String fileName) {
-        Commit commit = Commit.readFromFile(commitId);
+        Commit commit = null;
+        // 如果输入的commitId是 abbreviation
+        if (commitId.length() < 40) {
+            List<String> list = Utils.plainFilenamesIn(Repository.COMMITS_DIR);
+            assert list != null;
+            for (String s : list) {
+                if (s.startsWith(commitId)) {
+                    commit = Commit.readFromFile(s);
+                }
+            }
+        } else {
+            commit = Commit.readFromFile(commitId);
+        }
+
         if (commit == null) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
@@ -456,4 +478,20 @@ public class DoWork {
         Utils.writeContents(cwdFile, blob.getContent());
     }
 
+
+    /**
+     * branch command
+     * @param branchName
+     */
+    public void branch(String branchName) {
+        File file = Utils.join(Repository.BRANCHES, branchName);
+        if (file.exists()) {
+            System.out.println("A branch with that name already exists.");
+            System.exit(0);
+        }
+
+        head = head == null ? Head.readFromFile() : head;
+        Branch branch = new Branch(head.getCommitId(), branchName);
+        branch.save();
+    }
 }
