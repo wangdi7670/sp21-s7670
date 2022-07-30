@@ -78,6 +78,10 @@ public class Main {
                 validArgsNumber("reset", 2, args);
                 doWork.reset(args[1]);
                 break;
+            case "merge":
+                validArgsNumber("merge", 2, args);
+                doWork.merge(args[1]);
+                break;
 
         }
     }

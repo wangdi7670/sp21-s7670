@@ -76,7 +76,7 @@ public class DoWork {
             staged = Staged.readFromFile();
         }
 
-        staged.getStagedForAdd().put(fileName, blob.getBlobId());
+        staged.putStagedForAdd(fileName, blob.getBlobId());
 
         // 加入的blob要是和当前commit中的版本一致，则从staged area中删除
         if (head == null) {
@@ -211,7 +211,6 @@ public class DoWork {
      *  log command:
      */
     public void log() {
-        // TODO: merge commit
         if (head == null) {
             head = Head.readFromFile();
         }
@@ -314,10 +313,11 @@ public class DoWork {
         if (head == null) {
             head = Head.readFromFile();
         }
-        // 暂存区的
+        // staged area
         Map<String, String> stagedForAdd = staged.getStagedForAdd();
         Set<String> stagedForRemoval = staged.getStagedForRemoval();
-        // 当前commit中的
+
+        // tracked files by commit
         Commit currentCommit = head.getCurrentCommit();
         Map<String, String> fileName2blobId = currentCommit.getFileName2blobId();
         // working directory 下的所有文件名
@@ -650,5 +650,213 @@ public class DoWork {
 
         head.move(head.getBranchName(), givenCommit.getCommitId());
         head.save();
+    }
+
+
+    /**
+     *  merge:
+     *  1. assume two branches at the front commit
+     * @param branchName
+     */
+    public void merge(String branchName) {
+        checkInitialize();
+
+        staged = staged == null ? Staged.readFromFile() : staged;
+        if (staged.isEmpty()) {
+            System.out.println("You have uncommitted changes.");
+            System.exit(0);
+        }
+
+        if (!Branch.isBranchExist(branchName)) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+
+        head = head == null ? Head.readFromFile() : head;
+        if (head.getBranchName().equals(branchName)) {
+            System.out.println("Cannot merge a branch with itself.");
+            System.exit(0);
+        }
+
+        Branch givenBranch = Branch.readBranchFromFile(branchName);
+        assert givenBranch != null;
+        Commit givenCommit = givenBranch.getCommit();
+
+        head = head == null ? Head.readFromFile() : head;
+        Branch currentBranch = head.getCurrentBranch();
+        Commit currentCommit = currentBranch.getCommit();
+
+        Commit splitPoint = getLatestCommonAncestor(currentCommit, givenCommit);
+
+
+        // If an untracked file in the current commit would be overwritten or deleted by the merge
+        Set<String> untrackedFiles = Repository.listAllUntrackedFiles(staged, currentCommit);
+        for (String untrackedFile : untrackedFiles) {
+            // (5) case in 8 cases
+            if (givenCommit.isTrackedFile(untrackedFile) && !splitPoint.isTrackedFile(untrackedFile)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+            }
+
+            // (3) case in 8 cases
+            if (splitPoint.isTrackedFile(untrackedFile)
+                    && !currentCommit.isTrackedFile(untrackedFile)
+                    && !givenCommit.isTrackedFile(untrackedFile)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+            }
+        }
+
+        //  If the split point is the same commit as the given branch
+        if (Objects.equals(splitPoint, givenCommit)) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+            System.exit(0);
+        }
+        // If the split point is the current branch
+        if (Objects.equals(splitPoint, currentCommit)) {
+            currentBranch.move(givenBranch.getCommitId());
+            currentBranch.save();
+            head.move(currentBranch.getBranchName(), givenBranch.getCommitId());
+            head.save();
+            System.out.println("Current branch fast-forwarded.");
+        }
+
+        doMerge(splitPoint, currentCommit, givenCommit, currentBranch, givenBranch);
+    }
+
+    /**
+     * get the latest common ancestor of two branches
+     * @param currentCommit
+     * @param givenCommit
+     * @return
+     */
+    private Commit getLatestCommonAncestor(Commit currentCommit, Commit givenCommit) {
+        Commit c1 = currentCommit, c2 = givenCommit;
+
+        while (!Objects.equals(c1, c2)) {
+            if (c1 == null) {
+                c1 = givenCommit;
+            } else {
+                c1 = c1.getParentCommit();
+            }
+
+            if (c2 == null) {
+                c2 = currentCommit;
+            } else {
+                c2 = c2.getParentCommit();
+            }
+        }
+
+        return c1;
+    }
+
+    private void doMerge(Commit splitPoint, Commit currentCommit, Commit givenCommit,
+                         Branch currentBranch, Branch givenBranch) {
+
+        boolean isUpdated = false;  // 是否有文件更新
+        boolean isConflict = false;
+
+        String msg = "Merged " + givenBranch.getBranchName() + " into " + currentBranch.getBranchName() + ".";
+        Commit mergeCommit = new Commit(currentCommit.getCommitId(), givenCommit.getCommitId(), msg);
+
+        Set<String> allFileNames = new HashSet<>();
+        allFileNames.addAll(splitPoint.listAllTrackedFiles());
+        allFileNames.addAll(currentCommit.listAllTrackedFiles());
+        allFileNames.addAll(givenCommit.listAllTrackedFiles());
+
+        for (String fileName : allFileNames) {
+            if (splitPoint.isTrackedFile(fileName)
+                    && currentCommit.isTrackedFile(fileName)
+                    && givenCommit.isTrackedFile(fileName)) {
+                // (1)
+                if (Commit.isHaveSameFileBlobId(splitPoint, currentCommit, fileName)
+                        && !Commit.isHaveSameFileBlobId(splitPoint, givenCommit, fileName)) {
+                    isUpdated = true;
+                    String blobId = givenCommit.getTrackedFileBlobId(fileName);
+                    Repository.write2fileInCWD(fileName, blobId);
+
+                    staged.putStagedForAdd(fileName, blobId);
+                    mergeCommit.trackFile(fileName, blobId);
+                }
+                // (2)
+                else if (Commit.isHaveSameFileBlobId(splitPoint, givenCommit, fileName)
+                        && !Commit.isHaveSameFileBlobId(splitPoint, currentCommit, fileName)) {
+                    // do nothing
+                    Commit.otherCommitExtends(currentCommit, mergeCommit, fileName);
+                }
+            }
+
+            // (3)
+            if (splitPoint.isTrackedFile(fileName)
+                    && Commit.isHaveSameFileBlobId(currentCommit, givenCommit, fileName)) {
+                // do nothing
+                Commit.otherCommitExtends(currentCommit, mergeCommit, fileName);
+            }
+            // (4)
+            if (!splitPoint.isTrackedFile(fileName)
+                    && currentCommit.isTrackedFile(fileName)
+                    && !givenCommit.isTrackedFile(fileName)) {
+                // do nothing
+                Commit.otherCommitExtends(currentCommit, mergeCommit, fileName);
+            }
+
+            // (5)
+            if (!splitPoint.isTrackedFile(fileName)
+                    && givenCommit.isTrackedFile(fileName)
+                    && !currentCommit.isTrackedFile(fileName)) {
+
+                isUpdated = true;
+                String blobId = givenCommit.getTrackedFileBlobId(fileName);
+                Repository.write2fileInCWD(fileName, blobId);
+
+                staged.putStagedForAdd(fileName, blobId);
+                mergeCommit.trackFile(fileName, blobId);
+            }
+
+            // (6)
+            if (splitPoint.isTrackedFile(fileName)
+                    && currentCommit.isTrackedFile(fileName)
+                    && !givenCommit.isTrackedFile(fileName)) {
+
+                isUpdated = true;
+                Repository.deleteFileInCWD(fileName);
+                staged.putStagedForRemoval(fileName);
+            }
+
+            // (7)
+            if (splitPoint.isTrackedFile(fileName)
+                    && !Commit.isHaveSameFileBlobId(splitPoint, givenCommit, fileName)
+                    && !currentCommit.isTrackedFile(fileName)) {
+                // do nothing
+            }
+
+            // (8) conflict
+            if (!Commit.isHaveSameFileBlobId(currentCommit, givenCommit, fileName)) {
+                isConflict = true;
+                String givenBlobId = givenCommit.getTrackedFileBlobId(fileName);
+                String currentBlobId = currentCommit.getTrackedFileBlobId(fileName);
+
+                String newBlobId = Repository.dealConflictAndStaged(fileName, givenBlobId, currentBlobId, staged);
+                mergeCommit.trackFile(fileName, newBlobId);
+            }
+        }
+
+        if (isUpdated) {
+            head.move(head.getBranchName(), mergeCommit.getCommitId());
+            currentBranch.move(mergeCommit.getCommitId());
+
+            mergeCommit.save();
+            head.save();
+            currentBranch.save();
+            staged.clearStaged();
+        }
+
+        staged.save();
+
+        if (isConflict) {
+            System.out.println("Encountered a merge conflict.");
+        }
+
+
     }
 }

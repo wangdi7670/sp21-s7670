@@ -1,6 +1,10 @@
 package gitlet;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static gitlet.Utils.*;
 
 // TODO: any imports you need here
@@ -148,6 +152,68 @@ public class Repository {
             file.delete();
         }
     }
+
+    /**
+     * read blob content
+     * @param blobId
+     * @return
+     */
+    public static byte[] readBlobIdContent(String blobId) {
+        Blob blob = Blob.readFromFile(blobId);
+        if (blob == null) {
+            return null;
+        }
+
+        return blob.getContent();
+    }
+
+    /**
+     * merge content when encounter conflict, and stage the result
+     * @param fileName
+     * @param givenBlobId
+     * @param currentBlobId
+     * @return : newBlobId
+     */
+    public static String dealConflictAndStaged(String fileName, String givenBlobId, String currentBlobId, Staged staged) {
+        byte[] givenContent = readBlobIdContent(givenBlobId);
+        byte[] currentContent = readBlobIdContent(currentBlobId);
+        String firstLine = "<<<<<<< HEAD\n";
+        String middle = "=======\n";
+        String end = ">>>>>>>";
+
+        File file = join(CWD, fileName);
+        Utils.writeContents(file, firstLine, currentContent, middle, givenContent, end);
+
+        Blob newBlob = new Blob(fileName, Utils.readContents(file));
+        staged.putStagedForAdd(fileName, newBlob.getBlobId());
+
+        newBlob.save();
+
+        return newBlob.getBlobId();
+    }
+
+
+    /**
+     * return all untracked files
+     * @param staged
+     * @param currentCommit
+     * @return
+     */
+    public static Set<String> listAllUntrackedFiles(Staged staged, Commit currentCommit) {
+        Set<String> set = new HashSet<>();
+
+        List<String> plainFilesInCWD = Utils.plainFilenamesIn(Repository.CWD);
+        assert plainFilesInCWD != null;
+
+        for (String fileName : plainFilesInCWD) {
+            if (!currentCommit.isTrackedFile(fileName) && !staged.containsFileInStagedForAdd(fileName)) {
+                set.add(fileName);
+            }
+        }
+
+        return set;
+    }
+
 
     public static void main(String[] args) {
     }

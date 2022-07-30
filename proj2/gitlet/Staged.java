@@ -16,15 +16,6 @@ public class Staged implements Serializable, Dumpable {
     // private Map<String, String> stagedForRemoval;
     private Set<String> stagedForRemoval;
 
-    public static void main(String[] args) {
-        Set<String> set = new HashSet<>();
-        set.add("a");
-        set.add("b");
-        set.add("c");
-
-        List<String> list = new ArrayList<>(set);
-        System.out.println(list);
-    }
     private static final String FILE_NAME = "staging";
 
     /** 存储该对象的文件夹 */
@@ -44,6 +35,13 @@ public class Staged implements Serializable, Dumpable {
         return stagedForRemoval;
     }
 
+    /**
+     * if staged area is empty
+     * @return : true if the staged area is empty, or false
+     */
+    public boolean isEmpty() {
+        return stagedForAdd.isEmpty() && stagedForRemoval.isEmpty();
+    }
 
     /**
      * 持久化
@@ -90,6 +88,25 @@ public class Staged implements Serializable, Dumpable {
         return list;
     }
 
+    /**
+     * put file into staged for addition
+     * @param fileName
+     * @param blobId
+     */
+    public void putStagedForAdd(String fileName, String blobId) {
+        stagedForAdd.put(fileName, blobId);
+    }
+
+    /**
+     * put file into staged for removal
+     * @param fileName
+     */
+    public void putStagedForRemoval(String fileName) {
+        if (stagedForRemoval.contains(fileName)) {
+            throw new GitletException("fileName should not be in staged for removal");
+        }
+        stagedForRemoval.add(fileName);
+    }
 
     /**
      * 清空staged area
@@ -99,6 +116,14 @@ public class Staged implements Serializable, Dumpable {
         stagedForRemoval.clear();
     }
 
+    /**
+     * whether staged area contains file
+     * @param fileName
+     * @return
+     */
+    public boolean containsFileInStagedForAdd(String fileName) {
+        return stagedForAdd.containsKey(fileName);
+    }
 
     @Override
     public void dump() {

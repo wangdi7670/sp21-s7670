@@ -38,17 +38,29 @@ public class Commit implements Serializable, Dumpable {
     /** 用id表示父节点 */
     private String parent;
 
+    /** for merge commit */
+    private String secondParent;
+
+
+
     /** 创建时候的日期 */
     private String timeStamp;
 
     private Map<String, String> fileName2blobId;
 
+    /**
+     * initial commit
+     */
     public Commit() {
-        this("null", "Wed Dec 31 16:00:00 1969 -0800", "initial commit");
+        this("null", "null", "Wed Dec 31 16:00:00 1969 -0800", "initial commit");
     }
 
     public Commit(String parent, String message) {
-        this(parent, dateToTimeStamp(new Date()), message);
+        this(parent, "null", dateToTimeStamp(new Date()), message);
+    }
+
+    public Commit(String parent, String secondParent, String message) {
+        this(parent, secondParent, dateToTimeStamp(new Date()), message);
     }
 
 
@@ -57,10 +69,11 @@ public class Commit implements Serializable, Dumpable {
         return dateFormat.format(date);
     }
 
-    public Commit(String parent, String timeStamp, String message) {
+    public Commit(String parent, String secondParent, String timeStamp, String message) {
         this.parent = parent;
         this.timeStamp = timeStamp;
         this.message = message;
+        this.secondParent = secondParent;
         fileName2blobId = new HashMap<>();
         setId();
     }
@@ -108,9 +121,10 @@ public class Commit implements Serializable, Dumpable {
     }
 
     /**
-     * 获取跟踪的文件的id
-     * @param fileName: 跟踪的文件
-     * @return : 对应的id，没有就返回null
+     * return the blobId to which specified fileName is mapped in this commit,
+     * or null if this commit not tracks the fileName
+     * @param fileName:
+     * @return :
      */
     public String getTrackedFileBlobId(String fileName) {
         return fileName2blobId.get(fileName);
@@ -125,7 +139,7 @@ public class Commit implements Serializable, Dumpable {
     }
 
     private void setId() {
-        commitId = Utils.sha1(parent, timeStamp, message);
+        commitId = Utils.sha1(parent, secondParent, timeStamp, message);
     }
 
     public String getCommitId() {
@@ -141,8 +155,57 @@ public class Commit implements Serializable, Dumpable {
         this.fileName2blobId = fileName2blobId;
     }
 
+
+    /**
+     * whether blobId of file tracked by commit1 and commit2 is equal
+     * if both not tracked, return also true
+     * if one  tracks, another not tracks, return false
+     * @param commit1
+     * @param commit2
+     * @param fileName
+     * @return
+     */
+    public static boolean isHaveSameFileBlobId(Commit commit1, Commit commit2, String fileName) {
+        String blobId1 = commit1.getTrackedFileBlobId(fileName);
+        String blobId2 = commit2.getTrackedFileBlobId(fileName);
+        return Objects.equals(blobId1, blobId2);
+    }
+
+
+    /**
+     * get this commit tracking some file whose version is blobId
+     * @param fileName
+     * @param blobId
+     */
+    public void trackFile(String fileName, String blobId) {
+        fileName2blobId.put(fileName, blobId);
+    }
+
+
+    /**
+     * child commit tracks some file which is tracked by parent commit, unless parent commit does not track fileName
+     * @param parent
+     * @param child
+     * @param fileName
+     */
+    public static void otherCommitExtends(Commit parent, Commit child, String fileName) {
+        String parentFileBlobId = parent.getTrackedFileBlobId(fileName);
+        if (parentFileBlobId == null) {
+            return;
+        }
+        child.trackFile(fileName, parentFileBlobId);
+    }
+
+
     @Override
     public String toString() {
+        if (!secondParent.equals("null")) {
+            return "==\n" +
+                    "commit " + commitId + "\n" +
+                    "Merge: " + parent.substring(0, 7) + " " + secondParent.substring(0, 7) + "\n" +
+                    "Date: " + timeStamp + "\n" +
+                    "Merged development into master.\n";
+        }
         return "==\n" +
                 "commit " + commitId + "\n" +
                 "Date: " + timeStamp + "\n" +
@@ -162,7 +225,46 @@ public class Commit implements Serializable, Dumpable {
         System.out.println();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Commit commit = (Commit) o;
+        return Objects.equals(commitId, commit.commitId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(commitId);
+    }
+
     public String getMessage() {
         return message;
     }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setTimeStamp(Date date) {
+        this.timeStamp = dateToTimeStamp(date);
+    }
+
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
+
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(String timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+
 }
