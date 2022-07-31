@@ -121,7 +121,7 @@ public class Repository {
 
     /**
      * whether sha1-id of some file in CWD equals specified blobId
-     * @param fileName: cwd 下的文件名
+     * @param fileName: file name in CWD
      * @param blobId:
      * @return
      */

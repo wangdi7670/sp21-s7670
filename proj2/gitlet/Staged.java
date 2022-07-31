@@ -9,10 +9,10 @@ import java.util.*;
  * @date: 2022/7/27 19:16
  */
 public class Staged implements Serializable, Dumpable {
-    /** key is file name， value is blobId */
+    /** key is file name, value is blobId */
     private Map<String, String> stagedForAdd;
 
-    /** key file name， value is blobId */
+    /** key file name, value is blobId */
     // private Map<String, String> stagedForRemoval;
     private Set<String> stagedForRemoval;
 

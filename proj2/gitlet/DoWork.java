@@ -320,14 +320,14 @@ public class DoWork {
         // tracked files by commit
         Commit currentCommit = head.getCurrentCommit();
         Map<String, String> fileName2blobId = currentCommit.getFileName2blobId();
-        // working directory 下的所有文件名
+        // working directory file names
         List<String> plainFilesInCWD = Utils.plainFilenamesIn(Repository.CWD);
 
         /*
-        (1), (2), (3), (4)指的是 “modified but not staged”的情况
+        (1), (2), (3), (4) is situation of "modified but not staged"
          */
 
-        // 遍历 staged for add
+        // staged for add
         stagedForAdd.forEach((fileName, blobId) -> {
             staged_files.add(fileName);
 
@@ -341,14 +341,13 @@ public class DoWork {
             }
         });
 
-        // 遍历 staged for removal
+        // staged for removal
         removed_files.addAll(stagedForRemoval);
 
         if (plainFilesInCWD == null) {
             return;
         }
 
-        // 遍历工作目录下的所有纯文件
         for (String plainFileName : plainFilesInCWD) {
             if (!stagedForAdd.containsKey(plainFileName) && !fileName2blobId.containsKey(plainFileName)) {
                 untracked_files.add(plainFileName);
@@ -363,7 +362,6 @@ public class DoWork {
             }
         }
 
-        // 遍历 当前commit 中跟踪的，却不在 cwd中
         // (4) Not staged for removal, but tracked in the current commit and deleted from the working directory
         fileName2blobId.forEach((fileName, blobId) -> {
             if (!Repository.fileInCwdIsExist(fileName)) {
