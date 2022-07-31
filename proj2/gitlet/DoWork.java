@@ -388,7 +388,7 @@ public class DoWork {
     }
 
     private void showStagedFilesForRemoval(List<String> removed_files) {
-        System.out.println("=== Removal Files ===");
+        System.out.println("=== Removed Files ===");
         display(removed_files);
     }
 
