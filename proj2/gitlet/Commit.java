@@ -200,13 +200,13 @@ public class Commit implements Serializable, Dumpable {
     @Override
     public String toString() {
         if (!secondParent.equals("null")) {
-            return "==\n" +
+            return "===\n" +
                     "commit " + commitId + "\n" +
                     "Merge: " + parent.substring(0, 7) + " " + secondParent.substring(0, 7) + "\n" +
                     "Date: " + timeStamp + "\n" +
                     "Merged development into master.\n";
         }
-        return "==\n" +
+        return "===\n" +
                 "commit " + commitId + "\n" +
                 "Date: " + timeStamp + "\n" +
                 message + "\n";
