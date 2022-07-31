@@ -197,12 +197,11 @@ public class DoWork {
 
         //  If the file is tracked in the current commit, stage it for removal
         Commit currentCommit = Head.readFromFile().getCurrentCommit();
-        if (currentCommit.getFileName2blobId().containsKey(fileName)) {
+        if (currentCommit.isTrackedFile(fileName)) {
             staged.getStagedForRemoval().add(fileName);
-        }
-
-        if (file.exists()) {
-            file.delete();
+            if (file.exists()) {
+                file.delete();
+            }
         }
 
         staged.save();
