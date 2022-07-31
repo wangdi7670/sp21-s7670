@@ -9,16 +9,15 @@ import java.util.*;
  * @date: 2022/7/27 19:16
  */
 public class Staged implements Serializable, Dumpable {
-    /** key 是文件名， value是blobId */
+    /** key is file name， value is blobId */
     private Map<String, String> stagedForAdd;
 
-    /** key 是文件名， value是blobId */
+    /** key file name， value is blobId */
     // private Map<String, String> stagedForRemoval;
     private Set<String> stagedForRemoval;
 
     private static final String FILE_NAME = "staging";
 
-    /** 存储该对象的文件夹 */
     public static final File FOLDER = Repository.STAGING_AREA;
 
     public Staged() {
@@ -44,7 +43,7 @@ public class Staged implements Serializable, Dumpable {
     }
 
     /**
-     * 持久化
+     * persist
      */
     public void save() {
         File f = Utils.join(FOLDER, FILE_NAME);
@@ -52,7 +51,7 @@ public class Staged implements Serializable, Dumpable {
     }
 
     /**
-     * 读出 staged 对象
+     * read staged object
      * @return
      */
     public static Staged readFromFile() {
@@ -62,7 +61,7 @@ public class Staged implements Serializable, Dumpable {
     }
 
     /**
-     * 列出 staged area for addition 中的所有文件名
+     * list all file names in staged area for addition
      * @return
      */
     public List<String> listAllStagedFileNamesForAdd() {
@@ -76,7 +75,7 @@ public class Staged implements Serializable, Dumpable {
     }
 
     /**
-     * 列出所有 staged for removal 中的文件名
+     * list all file names in staged for removal
      * @return
      */
     public List<String> listAllStagedFileNamesForRemoval() {
@@ -109,7 +108,7 @@ public class Staged implements Serializable, Dumpable {
     }
 
     /**
-     * 清空staged area
+     * clear staged area
      */
     public void clearStaged() {
         stagedForAdd.clear();

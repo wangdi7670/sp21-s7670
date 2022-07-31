@@ -32,7 +32,7 @@ public class Blob implements Serializable, Dumpable {
     }
 
     /**
-     * 根据文件名和文件内容计算文件的 sha-1 ID
+     * compute the shai-id of specified file by file name and its content
      * @param file
      * @return
      */
@@ -47,7 +47,7 @@ public class Blob implements Serializable, Dumpable {
     }
 
     /**
-     * 持久化，文件名就是自己的 blobId
+     * persist a file whose file name is its blobId
      */
     public void save() {
         File f = Utils.join(Repository.BLOBS_DIR, blobId);
@@ -55,7 +55,7 @@ public class Blob implements Serializable, Dumpable {
     }
 
     /**
-     * 根据blobId读出相应的Blob对象，如果不存在相应的blobId，则返回null
+     * return Blob object by the given blobId, or null if not exist
      * @param blobId
      * @return
      */

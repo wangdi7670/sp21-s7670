@@ -23,9 +23,9 @@ public class Head implements Serializable, Dumpable {
     }
 
     /**
-     * 移动HEAD
-     * @param branchName: 要移动到的分支
-     * @param commitId: 要移动的分支对应的名字
+     * move head
+     * @param branchName: moved branch name
+     * @param commitId: commit id of given branch
      */
     public void move(String branchName, String commitId) {
         this.branchName = branchName;
@@ -33,7 +33,7 @@ public class Head implements Serializable, Dumpable {
     }
 
     /**
-     * 持久化, 文件名是 'HEAD'
+     * persist, file name is 'HEAD'
      */
     public void save() {
         File file = Utils.join(FOLDER, FILE_NAME);
@@ -47,7 +47,7 @@ public class Head implements Serializable, Dumpable {
     }
 
     /**
-     * 返回当前head所指向的commit
+     * return current commit
      * @return
      */
     public Commit getCurrentCommit() {
@@ -57,7 +57,7 @@ public class Head implements Serializable, Dumpable {
 
 
     /**
-     * 返回当前 HEAD 指向的 Branch
+     * return Branch mapped by HEAD
      * @return
      */
     public Branch getCurrentBranch() {

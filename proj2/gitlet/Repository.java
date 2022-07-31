@@ -62,14 +62,14 @@ public class Repository {
 
 
     /**
-     * 删除 .gitlet 目录及子目录，文件
+     * delete all files in .gitlet
      */
     public static void destroy() {
         delete(GITLET_DIR.getPath());
     }
 
     /**
-     * 删除指定路径的所有文件
+     * delete all files and directories in path
      * @param path
      */
     public static void delete(String path) {
@@ -85,7 +85,7 @@ public class Repository {
     }
 
     /**
-     * gitlet是否初始化
+     * whether initialized
      * @return
      */
     public static boolean isInitialized() {
@@ -105,13 +105,13 @@ public class Repository {
 
     public static void mkdir(File file) {
         if (file.exists()) {
-            throw new GitletException("文件已经存在");
+            throw new GitletException("file already exists");
         }
         file.mkdir();
     }
 
     /**
-     * 工作区下的某文件是否存在
+     * whether some file in CWD exists
      * @return
      */
     public static boolean fileInCwdIsExist(String fileName) {
@@ -120,7 +120,7 @@ public class Repository {
     }
 
     /**
-     * cwd下的某文件的 sha1-id 是否和 给定的blobID 不相等
+     * whether sha1-id of some file in CWD equals specified blobId
      * @param fileName: cwd 下的文件名
      * @param blobId:
      * @return
@@ -131,7 +131,7 @@ public class Repository {
     }
 
     /**
-     * 向工作目录中的文件写入blobId对应的文件
+     * write content mapped by blobId to file in CWD
      * @param fileName
      * @param blobId
      */
@@ -143,7 +143,7 @@ public class Repository {
     }
 
     /**
-     * 删除 cwd 下的文件
+     * delete file in CWD
      * @param fileName
      */
     public static void deleteFileInCWD(String fileName) {

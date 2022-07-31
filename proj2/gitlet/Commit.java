@@ -12,7 +12,7 @@ import java.util.*;
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
- *  简化版本的 gitlet 不考虑子目录
+ *  do not consider subdirectories
  *
  *  When we commit, only the HEAD and active branch move
  *  @author TODO
@@ -29,13 +29,13 @@ public class Commit implements Serializable, Dumpable {
      * variable is used. We've provided one example for `message`.
      */
 
-    /** sha-1算法生成id */
+    /** sha-1 id */
     private String commitId;
 
     /** The message of this Commit. */
     private String message;
 
-    /** 用id表示父节点 */
+    /** parent commit represented by sha1-id */
     private String parent;
 
     /** for merge commit */
@@ -43,7 +43,7 @@ public class Commit implements Serializable, Dumpable {
 
 
 
-    /** 创建时候的日期 */
+    /** date when created */
     private String timeStamp;
 
     private Map<String, String> fileName2blobId;
@@ -79,7 +79,7 @@ public class Commit implements Serializable, Dumpable {
     }
 
     /**
-     * 文件名是 id
+     * persist, file name is id
      */
     public void save() {
         File file = Utils.join(FOLDER, commitId);
@@ -87,7 +87,7 @@ public class Commit implements Serializable, Dumpable {
     }
 
     /**
-     * 根据id从文件中读取
+     * read from file by given commitId
      * @param commitId
      * @return
      */
@@ -101,7 +101,7 @@ public class Commit implements Serializable, Dumpable {
     }
 
     /**
-     * 返回 parentCommit
+     * return parentCommit
      * @return
      */
     public Commit getParentCommit() {
@@ -112,7 +112,7 @@ public class Commit implements Serializable, Dumpable {
     }
 
     /**
-     * 该commit 是否跟踪了某个文件
+     * whether this commit tracks given file
      * @param fileName
      * @return
      */
@@ -131,7 +131,7 @@ public class Commit implements Serializable, Dumpable {
     }
 
     /**
-     * 返回所有跟踪的文件
+     * return all tracked files
      * @return
      */
     public Set<String> listAllTrackedFiles() {

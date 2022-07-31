@@ -32,16 +32,16 @@ public class DoWork {
     }
 
     private void doInit() {
-        // 创建初始的文件夹
+        // initialize .gitlet
         Repository.initDir();
 
-        // 初始化
+        // create
         Commit initCommit = new Commit();
         Branch branch = new Branch(initCommit.getCommitId(), "master");
         Head head = new Head(branch.getBranchName(), initCommit.getCommitId());
         Staged staged = new Staged();
 
-        // 持久化
+        // persist
         initCommit.save();
         branch.save();
         head.save();
@@ -68,7 +68,7 @@ public class DoWork {
     private void doAdd(File file) {
         String fileName = file.getName();
 
-        // 直接加入staged area, 如果之前有的话会覆盖掉之前的
+        // Staging an already-staged file overwrites the previous entry in the staging area with the new contents
         byte[] content = Utils.readContents(file);
         Blob blob = new Blob(fileName, content);
         blob.save();
@@ -78,10 +78,12 @@ public class DoWork {
 
         staged.putStagedForAdd(fileName, blob.getBlobId());
 
-        // 加入的blob要是和当前commit中的版本一致，则从staged area中删除
         if (head == null) {
             head = Head.readFromFile();
         }
+
+        // If the current working version of the file is identical to the version in the current commit,
+        // do not stage it to be added, and remove it from the staging area if it is already there
         Commit currentCommit = Commit.readFromFile(head.getCommitId());
         Map<String, String> fileName2blobId = currentCommit.getFileName2blobId();
         if (fileName2blobId.containsKey(fileName)) {
@@ -95,15 +97,14 @@ public class DoWork {
 
 
     /**
-     * commit 命令: When we commit, only the HEAD and active branch move
+     * commit : When we commit, only the HEAD and active branch move
      *
      * @param msg
      */
     public void commit(String msg) {
-        // 1. 检查初始化
         checkInitialize();
 
-        // 2. staging area 要是空的话就直接退出
+        // If no files have been staged,
         Staged staged = Staged.readFromFile();
         if (staged.getStagedForRemoval().isEmpty() && staged.getStagedForAdd().isEmpty()) {
             System.out.println("No changes added to the commit.");
@@ -175,7 +176,7 @@ public class DoWork {
         }
 
         if (file.isDirectory()) {
-            System.out.println("必须是文件");
+            System.out.println("not a file");
             System.exit(0);
         }
 
@@ -189,12 +190,12 @@ public class DoWork {
         }
         Map<String, String> stagedForAdd = staged.getStagedForAdd();
 
-        // 如果在 staged area就删除
+        // Unstage the file if it is currently staged for addition
         if (stagedForAdd.containsKey(fileName)) {
             stagedForAdd.remove(fileName);
         }
 
-        // 如果在当前commit中，就给他放到staged for removal
+        //  If the file is tracked in the current commit, stage it for removal
         Commit currentCommit = Head.readFromFile().getCurrentCommit();
         if (currentCommit.getFileName2blobId().containsKey(fileName)) {
             staged.getStagedForRemoval().add(fileName);
@@ -241,7 +242,6 @@ public class DoWork {
      */
     public void find(String commitMessage) {
         List<String> list = Utils.plainFilenamesIn(Repository.COMMITS_DIR);
-        // flag 表示有没有和commitMessage对应的commit
         boolean flag = false;
         for (String fileName : list) {
             Commit commit = Commit.readFromFile(fileName);
@@ -299,7 +299,7 @@ public class DoWork {
 
 
     /**
-     * 遍历工作，暂存区，当前commit中的文件， 填充4个参数
+     * used by 'status command'
      * @param staged_files: staged for add
      * @param removed_files: staged for removal
      * @param changesNotStaged:
@@ -408,7 +408,7 @@ public class DoWork {
      * checkout:
      *  (1):
      *  (2):
-     *  (3): 切换分支时候不考虑 staged area, 直接清空 staged area
+     *  (3):  The staging area is cleared, unless the checked-out branch is the current branch
      * @param args
      */
     public void checkout(String... args) {
@@ -459,13 +459,13 @@ public class DoWork {
     }
 
     /**
-     * 通过commitId 给定一个commit, 把当前目录下的 file 的内容替换成那个commit的file内容
+     * used by checkout (1) (2)
      * @param commitId
      * @param fileName
      */
     private void replaceByCommitId(String commitId, String fileName) {
         Commit commit = null;
-        // 如果输入的commitId是 abbreviation
+        // if commitId is an abbreviation
         if (commitId.length() < 40) {
             List<String> list = Utils.plainFilenamesIn(Repository.COMMITS_DIR);
             assert list != null;
@@ -492,8 +492,7 @@ public class DoWork {
     }
 
     /**+
-     * 将 CWD 下的文件内容替换成 blobId 指向的内容
-     *
+     * used by checkout (1) (2)
      * @param fileName
      * @param blobId
      */
@@ -505,19 +504,18 @@ public class DoWork {
     }
 
     /**
-     * CWD 下是否有没跟踪的文件
+     * return untracked files in CWD
      * @return
      */
     private List<String> getUntrackedFiles() {
-        // 暂存区的
         staged = staged == null ? Staged.readFromFile() : staged;
         Map<String, String> stagedForAdd = staged.getStagedForAdd();
 
-        // 当前commit中跟踪的
         head = head == null ? Head.readFromFile() : head;
         Commit currentCommit = head.getCurrentCommit();
         Map<String, String> fileName2blobId = currentCommit.getFileName2blobId();
 
+        // file name in CWD
         List<String> plainFilesInCWD = Utils.plainFilenamesIn(Repository.CWD);
 
         List<String> untracked_files = new ArrayList<>();
@@ -532,7 +530,7 @@ public class DoWork {
     }
 
     /**
-     * 切换分支
+     * used by checkout (3)
      * @param branchName
      */
     private void doSwitch(String branchName) {
@@ -545,12 +543,10 @@ public class DoWork {
 
         Commit branch2commit = branch.getCommit();
 
-        // 要切换的分支中跟踪的文件，直接放到 CWD 下
         for (String file : branch2commit.listAllTrackedFiles()) {
             Repository.write2fileInCWD(file, branch2commit.getTrackedFileBlobId(file));
         }
 
-        // 当前切换的分支下跟踪的文件，但要切换的分支中不跟踪，那就从 CWD 下删除
         for (String fileInCurrentCommit : currentCommit.listAllTrackedFiles()) {
             if (!branch2commit.isTrackedFile(fileInCurrentCommit)) {
                 Repository.deleteFileInCWD(fileInCurrentCommit);
@@ -579,7 +575,7 @@ public class DoWork {
 
 
     /**
-     * rm-branch: 删除分支, 只删除指针，不删commit
+     * rm-branch command:
      * @param branchName:
      */
     public void rmBranch(String branchName) {
@@ -753,7 +749,7 @@ public class DoWork {
     private void doMerge(Commit splitPoint, Commit currentCommit, Commit givenCommit,
                          Branch currentBranch, Branch givenBranch) {
 
-        boolean isUpdated = false;  // 是否有文件更新
+        boolean isUpdated = false;  // whether file is updated
         boolean isConflict = false;
 
         String msg = "Merged " + givenBranch.getBranchName() + " into " + currentBranch.getBranchName() + ".";

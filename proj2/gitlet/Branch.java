@@ -24,7 +24,7 @@ public class Branch implements Serializable, Dumpable {
     }
 
     /**
-     * 返回所有 branch 的名字
+     * return all the branch names
      * @return
      */
     public static String[] listAllBranchNames() {
@@ -33,7 +33,7 @@ public class Branch implements Serializable, Dumpable {
     }
 
     /**
-     * 持久化，文件名是分支名
+     * persist a branch whose file name is its branch name
      */
     public void save() {
         File file = Utils.join(FOLDER, branchName);
@@ -41,7 +41,7 @@ public class Branch implements Serializable, Dumpable {
     }
 
     /**
-     * 从文件中读出Branch
+     * read branch from given branch name
      * @param branchName
      * @return
      */
@@ -56,7 +56,7 @@ public class Branch implements Serializable, Dumpable {
     }
 
     /**
-     * 获取该branch指向的 commit
+     * return commit mapped by this branch
      * @return :
      */
     public Commit getCommit() {
@@ -65,7 +65,7 @@ public class Branch implements Serializable, Dumpable {
     }
 
     /**
-     * 判断某个分支是否存在
+     * whether given branch exist
      * @param branchName
      * @return
      */
