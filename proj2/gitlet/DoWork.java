@@ -175,7 +175,13 @@ public class DoWork {
         checkInitialize();
 
         File file = Utils.join(Repository.CWD, fileName);
-        if (!file.exists()) {
+
+        // If the file is neither staged nor tracked by the head commit, print the error message
+        head = head == null ? Head.readFromFile() : head;
+        staged = staged == null ? Staged.readFromFile() : staged;
+        Commit currentCommit = head.getCurrentCommit();
+
+        if (!staged.containsFileInStagedForAdd(fileName) && !currentCommit.isTrackedFile(fileName)) {
             System.out.println("No reason to remove the file.");
             System.exit(0);
         }
