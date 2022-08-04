@@ -666,7 +666,7 @@ public class DoWork {
         checkInitialize();
 
         staged = staged == null ? Staged.readFromFile() : staged;
-        if (staged.isEmpty()) {
+        if (!staged.isEmpty()) {
             System.out.println("You have uncommitted changes.");
             System.exit(0);
         }
@@ -835,7 +835,9 @@ public class DoWork {
             }
 
             // (8) conflict
-            if (!Commit.isHaveSameFileBlobId(currentCommit, givenCommit, fileName)) {
+            if (currentCommit.isTrackedFile(fileName)
+                    && givenCommit.isTrackedFile(fileName)
+                    && !Commit.isHaveSameFileBlobId(currentCommit, givenCommit, fileName)) {
                 isConflict = true;
                 String givenBlobId = givenCommit.getTrackedFileBlobId(fileName);
                 String currentBlobId = currentCommit.getTrackedFileBlobId(fileName);

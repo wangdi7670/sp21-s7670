@@ -204,7 +204,7 @@ public class Commit implements Serializable, Dumpable {
                     "commit " + commitId + "\n" +
                     "Merge: " + parent.substring(0, 7) + " " + secondParent.substring(0, 7) + "\n" +
                     "Date: " + timeStamp + "\n" +
-                    "Merged development into master.\n";
+                    message + "\n";
         }
         return "===\n" +
                 "commit " + commitId + "\n" +
