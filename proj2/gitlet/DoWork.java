@@ -104,6 +104,10 @@ public class DoWork {
      */
     public void commit(String msg) {
         checkInitialize();
+        if (msg.equals("")) {
+            System.out.println("Please enter a commit message.");
+            System.exit(0);
+        }
 
         // If no files have been staged,
         Staged staged = Staged.readFromFile();

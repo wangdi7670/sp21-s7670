@@ -33,13 +33,12 @@ public class Main {
                 doWork.add(args[1]);
                 break;
             case "commit":
-                try {
-                    validArgsNumber("commit", 2, args);
-                } catch (Exception e) {
+                if (args.length < 2) {
                     System.out.println("Please enter a commit message.");
                     System.exit(0);
+                } else {
+                    doWork.commit(args[1]);
                 }
-                doWork.commit(args[1]);
                 break;
             case "rm":
                 validArgsNumber("rm", 2, args);
