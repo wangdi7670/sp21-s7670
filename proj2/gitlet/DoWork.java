@@ -423,7 +423,7 @@ public class DoWork {
         // java gitlet.Main checkout -- [file name]
         if (args.length == 3) {
             if (!args[1].equals("--")) {
-                System.out.println("wrong operand");
+                System.out.println("Incorrect operands");
                 return;
             }
             String fileName = args[2];
@@ -433,7 +433,7 @@ public class DoWork {
         // java gitlet.Main checkout [commit id] -- [file name]
         else if (args.length == 4) {
             if (!args[2].equals("--")) {
-                System.out.println("wrong operand");
+                System.out.println("Incorrect operands");
                 return;
             }
             String commitId = args[1];
