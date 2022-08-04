@@ -89,6 +89,7 @@ public class DoWork {
         if (fileName2blobId.containsKey(fileName)) {
             if (fileName2blobId.get(fileName).equals(blob.getBlobId())) {
                 staged.getStagedForAdd().remove(fileName);
+                staged.getStagedForRemoval().remove(fileName);
             }
         }
 
