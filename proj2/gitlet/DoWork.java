@@ -820,7 +820,8 @@ public class DoWork {
             // (6)
             if (splitPoint.isTrackedFile(fileName)
                     && currentCommit.isTrackedFile(fileName)
-                    && !givenCommit.isTrackedFile(fileName)) {
+                    && !givenCommit.isTrackedFile(fileName)
+                    && Commit.isHaveSameFileBlobId(splitPoint, currentCommit, fileName)) {
 
                 isUpdated = true;
                 Repository.deleteFileInCWD(fileName);
@@ -835,9 +836,25 @@ public class DoWork {
             }
 
             // (8) conflict
-            if (currentCommit.isTrackedFile(fileName)
+            /*
+            Any files modified in different ways in the current and given branches are in conflict.
+            'Modified in different ways' can mean that the contents of both are changed and different from other,
+            or the contents of one are changed and the other file is deleted,
+            or the file was absent at the split point and has different contents in the given and current branches
+             */
+            boolean b1 = splitPoint.isTrackedFile(fileName) && currentCommit.isTrackedFile(fileName)
+                    && givenCommit.isTrackedFile(fileName) && !Commit.isHaveSameFileBlobId(currentCommit, givenCommit, fileName);
+
+            boolean b2 = splitPoint.isTrackedFile(fileName)
+                    && ((currentCommit.isTrackedFile(fileName) && !givenCommit.isTrackedFile(fileName) && !Commit.isHaveSameFileBlobId(splitPoint, currentCommit, fileName))
+                        || (!currentCommit.isTrackedFile(fileName) && givenCommit.isTrackedFile(fileName) && !Commit.isHaveSameFileBlobId(splitPoint, givenCommit, fileName)));
+
+            boolean b3 = !splitPoint.isTrackedFile(fileName)
+                    && currentCommit.isTrackedFile(fileName)
                     && givenCommit.isTrackedFile(fileName)
-                    && !Commit.isHaveSameFileBlobId(currentCommit, givenCommit, fileName)) {
+                    && !Commit.isHaveSameFileBlobId(currentCommit, givenCommit, fileName);
+
+            if (b1 || b2 || b3) {
                 isConflict = true;
                 String givenBlobId = givenCommit.getTrackedFileBlobId(fileName);
                 String currentBlobId = currentCommit.getTrackedFileBlobId(fileName);

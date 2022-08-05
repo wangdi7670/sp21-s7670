@@ -161,9 +161,12 @@ public class Repository {
      * @return
      */
     public static String readBlobIdContent(String blobId) {
+        if (blobId == null) {
+            return "";
+        }
         Blob blob = Blob.readFromFile(blobId);
         if (blob == null) {
-            return null;
+            return "";
         }
 
         return new String(blob.getContent());
@@ -205,6 +208,9 @@ public class Repository {
      * @param s
      */
     private static String addEndN(String s) {
+        if (s.equals("")) {
+            return s;
+        }
         StringBuilder sb = new StringBuilder(s);
         if (sb.charAt(sb.length() - 1) != '\n') {
             sb.append("\n");
