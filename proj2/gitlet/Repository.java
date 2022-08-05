@@ -1,6 +1,8 @@
 package gitlet;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -158,13 +160,13 @@ public class Repository {
      * @param blobId
      * @return
      */
-    public static byte[] readBlobIdContent(String blobId) {
+    public static String readBlobIdContent(String blobId) {
         Blob blob = Blob.readFromFile(blobId);
         if (blob == null) {
             return null;
         }
 
-        return blob.getContent();
+        return new String(blob.getContent());
     }
 
     /**
@@ -175,8 +177,14 @@ public class Repository {
      * @return : newBlobId
      */
     public static String dealConflictAndStaged(String fileName, String givenBlobId, String currentBlobId, Staged staged) {
-        byte[] givenContent = readBlobIdContent(givenBlobId);
-        byte[] currentContent = readBlobIdContent(currentBlobId);
+        String givenContent = readBlobIdContent(givenBlobId);
+        assert givenContent != null;
+        givenContent = addEndN(givenContent);
+
+        String currentContent = readBlobIdContent(currentBlobId);
+        assert currentContent != null;
+        currentContent = addEndN(currentContent);
+
         String firstLine = "<<<<<<< HEAD\n";
         String middle = "=======\n";
         String end = ">>>>>>>";
@@ -190,6 +198,18 @@ public class Repository {
         newBlob.save();
 
         return newBlob.getBlobId();
+    }
+
+    /**
+     * add '\n' to the end if there is no '\n'
+     * @param s
+     */
+    private static String addEndN(String s) {
+        StringBuilder sb = new StringBuilder(s);
+        if (sb.charAt(sb.length() - 1) != '\n') {
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
 
@@ -216,5 +236,14 @@ public class Repository {
 
 
     public static void main(String[] args) {
+        String s = "abc";
+        // addEndN(s);
+        if (s.charAt(s.length() - 1) != '\n') {
+            s = s + "\n";
+        }
+        System.out.println(s);
+        System.out.println("over");
     }
+
+
 }
