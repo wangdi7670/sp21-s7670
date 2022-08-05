@@ -182,11 +182,11 @@ public class Repository {
     public static String dealConflictAndStaged(String fileName, String givenBlobId, String currentBlobId, Staged staged) {
         String givenContent = readBlobIdContent(givenBlobId);
         assert givenContent != null;
-        givenContent = addEndN(givenContent);
+        // givenContent = addEndN(givenContent);
 
         String currentContent = readBlobIdContent(currentBlobId);
         assert currentContent != null;
-        currentContent = addEndN(currentContent);
+        // currentContent = addEndN(currentContent);
 
         String firstLine = "<<<<<<< HEAD\n";
         String middle = "=======\n";
