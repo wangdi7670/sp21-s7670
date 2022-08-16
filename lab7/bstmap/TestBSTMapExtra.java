@@ -45,12 +45,34 @@ public class TestBSTMapExtra {
         q.put("a","a");
         q.put("d","a");
         q.put("e","a"); // a b c d e
+
+        // assertTrue(q.remove("c").equals("a"));
         assertTrue(null != q.remove("c"));
+        // q.printInOrder();
         assertFalse(q.containsKey("c"));
         assertTrue(q.containsKey("a"));
         assertTrue(q.containsKey("b"));
         assertTrue(q.containsKey("d"));
         assertTrue(q.containsKey("e"));
+    }
+
+    @Test
+    public void test_min() {
+        BSTMap<String,String> q = new BSTMap<String,String>();
+        q.put("c","a");
+        q.put("b","a");
+        q.put("a","a");
+        q.put("d","a");
+        q.put("e","a"); // a b c d e
+
+        BSTMap<String, String>.Node min = q.min();
+        assertTrue(q.min().key.equals("a"));
+
+        q.deleteMin();
+        assertFalse(q.containsKey("a"));
+
+        q.deleteMin();
+        assertFalse(q.containsKey("b"));
     }
 
     /* Remove Test 2

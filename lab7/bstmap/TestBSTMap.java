@@ -87,4 +87,14 @@ public class TestBSTMap {
         assertTrue(b.containsKey("hi"));
     }
 
+    @Test
+    public void test1() {
+        Integer i1 = 3;
+        Integer i2 = 39;
+        int ans = i1.compareTo(i2);
+
+        // System.out.println(ans);
+
+    }
+
 }
