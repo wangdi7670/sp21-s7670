@@ -54,6 +54,18 @@ public class TestBSTMapExtra {
         assertTrue(q.containsKey("b"));
         assertTrue(q.containsKey("d"));
         assertTrue(q.containsKey("e"));
+
+        assertTrue(q.remove("xxx") == null);
+        assertTrue(q.containsKey("a"));
+        assertTrue(q.containsKey("b"));
+        assertTrue(q.containsKey("d"));
+        assertTrue(q.containsKey("e"));
+
+        assertTrue(q.remove("a", "a").equals("a"));
+        assertTrue(!q.containsKey("a"));
+
+        assertTrue(q.remove("e", "e") == null);
+        assertTrue(q.containsKey("e"));
     }
 
     @Test
