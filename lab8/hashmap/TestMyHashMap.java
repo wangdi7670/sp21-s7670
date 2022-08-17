@@ -3,7 +3,9 @@ package hashmap;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -48,6 +50,8 @@ public class TestMyHashMap {
     }
 
     public static void sanityContainsKeyTest(MyHashMap<String, Integer> b) {
+        HashMap<String, Integer> map = new HashMap<>();
+        map.put("waterYouDoingHere", 100);
         assertFalse(b.containsKey("waterYouDoingHere"));
         b.put("waterYouDoingHere", 0);
         assertTrue(b.containsKey("waterYouDoingHere"));
@@ -157,5 +161,21 @@ public class TestMyHashMap {
         studentIDs.put("evil alan", 345);
         assertEquals(345, studentIDs.get("evil alan").intValue());
         assertEquals(studentIDs.get("evil alan"), studentIDs.get("alan"));
+    }
+
+    @Test
+    public void t() {
+        HashMap<Integer, Integer> map = new HashMap<>();
+        map.put(1, 1);
+        map.put(2, 2);
+        Set<Map.Entry<Integer, Integer>> entries = map.entrySet();
+        Set<Integer> set = map.keySet();
+        map.remove(1);
+        map.remove(2, 2);
+
+        System.out.println(Math.floor(2.3));
+        System.out.println(Math.floor(2.8));
+        System.out.println(Math.floor(-2.8));
+        System.out.println(Math.floor(-2.1));
     }
 }

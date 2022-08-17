@@ -66,6 +66,8 @@ public class TestBSTMapExtra {
 
         assertTrue(q.remove("e", "e") == null);
         assertTrue(q.containsKey("e"));
+
+        assertTrue(q.size() == 3);
     }
 
     @Test
